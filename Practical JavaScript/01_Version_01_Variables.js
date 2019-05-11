@@ -1,4 +1,5 @@
-// store todos
+// V1: Variables
+
 var todos = ["item 1, item 2, item 3"]
 
 // display todos

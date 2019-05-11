@@ -1,4 +1,4 @@
-// store todos in an object
+// V3: Store todos in an object
 var todoList = {
   todos: ["item 1", "item 2", "item3"],
   

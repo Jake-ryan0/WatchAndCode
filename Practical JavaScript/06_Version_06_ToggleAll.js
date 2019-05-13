@@ -1,4 +1,4 @@
-// V5: If-else statements 
+// V6: If-else statements 
 // toggleAll method
 
 var todoList = {

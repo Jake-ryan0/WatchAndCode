@@ -1,4 +1,4 @@
-// V7: HTML and DOM
+// V7: HTML and DOM Part 2
 
 var todoList = {
   // todos array

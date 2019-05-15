@@ -7,13 +7,27 @@
   <title>Todo List</title>
 </head>
 <body>
-  <div>
     <h1>Todo List</h1>
-    <button id="displayTodosButton">Display todos</button>
-    <button id="toggleAllButton">Toggle All</button>
-  </div>
-  
+    <div>
+      <button onclick="handlers.toggleAll()">Toggle All</button>
+    </div>
+    <div>
+      <button onclick="handlers.addTodo()">Add</button>
+      <input type="text" id="addTodoTextInput">
+    </div>
+    <div>
+      <button onclick="handlers.changeTodo()">Change todo</button>
+      <input id="changeTodoIndexInput" type="number">
+      <input id="changeTodoTextInput" type="text">
+    </div>
+    <div>
+      <button onclick="handlers.toggleCompleted()">Toggle Completed</button>
+      <input type="number" id="toggleCompletedIndexInput">
+    </div>
+    <ul>
+      <!--Dynamically adding list items-->
+    </ul>
 
-  <script src="/07_Version_07_HTML_and_DOM.js"></script>
+  <script src="11_Version_10_ClickToDelete.js"></script>
 </body>
 </html>

@@ -1,21 +1,9 @@
-// V8: HTML and DOM Part 2
+// V9: Escape from console
+// Ul, Li, dynamically adding li and text to the webpage
 
 var todoList = {
   // todos array
   todos: [],
-
-  // displayTodos method
-  displayTodos: function () {
-    if (this.todos.length === 0) {
-      console.log("Todo list is empty!")
-    } else {
-      console.log("These are my todos:");
-      for (var i = 0; i < this.todos.length; i++) {
-        if (this.todos[i].completed) console.log("(x)", this.todos[i].todoText);
-        else console.log("( )", this.todos[i].todoText);
-      }
-    }
-  },
 
   // addTodos method
   addTodo: function (todoText) {
@@ -23,26 +11,22 @@ var todoList = {
       todoText: todoText,
       completed: false
     });
-    this.displayTodos();
   },
 
   // changeTodo changes the text property of the object
   changeTodo: function (index, updatedText) {
     this.todos[index].todoText = updatedText;
-    this.displayTodos();
   },
 
   // deleteTodos method
   deleteTodo: function (index) {
     this.todos.splice(index, 1);
-    this.displayTodos();
   },
 
   // toggleCompleted toggles the the todo object's "completed" property
   toggleCompleted: function (index) {
     var todoObj = this.todos[index];
     todoObj.completed = !todoObj.completed;
-    this.displayTodos();
   },
 
   toggleAll: function() {
@@ -70,22 +54,18 @@ var todoList = {
         this.todos[i].completed = true;
       }
     }
-    
-    this.displayTodos();
+  view.displayTodos();
   }
 };
 
 
 
 var handlers = {
-  displayTodos: function() {
-    todoList.displayTodos();
-  }, 
-
   addTodo: function() {
     var addTodoTextInput = document.getElementById("addTodoTextInput");
     todoList.addTodo(addTodoTextInput.value);
     addTodoTextInput.value = ""; 
+    view.displayTodos();
   },
 
   changeTodo: function() {
@@ -94,8 +74,9 @@ var handlers = {
 
     todoList.changeTodo(indexObj.valueAsNumber, textObj.value);
     
-    indexObj = "";
+    indexObj.value = "";
     textObj.value = "";
+    view.displayTodos();
   }, 
 
   deleteTodo: function() {
@@ -103,6 +84,7 @@ var handlers = {
 
     todoList.deleteTodo(indexObj.valueAsNumber); 
     indexObj.value = "";
+    view.displayTodos();
   }, 
 
   toggleCompleted: function() {
@@ -110,10 +92,41 @@ var handlers = {
 
     todoList.toggleCompleted(indexObj.valueAsNumber); 
     indexObj.value = ""; 
+    view.displayTodos();
   },
 
   toggleAll: function() {
     todoList.toggleAll(); 
+    view.displayTodos();
   }
 
 };
+
+// when introducing a new feature, make it work without modifying old code
+// think of the functionality that this method in the new version is supposed to introduce / replace
+// replaces todoList.displayTodos();
+// when it is activated it should display all the todos in the array. 
+// it is activated when youu click the button which calls the methods on the handler object.
+var view = {
+  displayTodos: function() {
+    var todosUlElement = document.querySelector("ul");
+    todosUlElement.innerHTML = "";
+    for (var i = 0; i < todoList.todos.length; i++) {
+      var newLiElement = document.createElement("li"); 
+      var todoTextWithCompletetion = ""; 
+      var currentTodo = todoList.todos[i];  
+      
+      if (currentTodo.completed) {
+        todoTextWithCompletetion = "(x) " + currentTodo.todoText; 
+      } else {
+        todoTextWithCompletetion = "( ) " + currentTodo.todoText; 
+      }
+      
+      newLiElement.id = i; 
+      newLiElement.textContent = todoTextWithCompletetion;
+      newLiElement.appendChild(this.createDeleteButton());
+      todosUlElement.appendChild(newLiElement); 
+    }
+  },
+};
+

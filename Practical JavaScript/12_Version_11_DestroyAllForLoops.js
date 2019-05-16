@@ -1,5 +1,4 @@
-// V10: Creting a delete button everytime a new Li is added
-// Adding an event listener to the Ul element accessing the id of the li element that is to be deleted
+// V10 Destroy all for loops
 
 var todoList = {
   // todos array
@@ -33,11 +32,12 @@ var todoList = {
     var allTasksCompleted;
     var numCompleted = 0;
 
-    for (var i = 0; i < this.todos.length; i++) {
-      if (this.todos[i].completed) {
+
+    this.todos.forEach(function(item) {
+      if (item.completed) {
         numCompleted++;
       }
-    }
+    });
 
     // checking if all completed
     if (numCompleted === this.todos.length) allTasksCompleted = true;
@@ -45,15 +45,13 @@ var todoList = {
 
     // if all completed, set all to uncompleted
     // else set all to completed
-    if (allTasksCompleted) {
-      for (var i = 0; i < this.todos.length; i++) {
-        this.todos[i].completed = false;
+    this.todos.forEach(function(item) {
+      if (allTasksCompleted) {
+        item.completed = false;  
+      } else {
+        item.completed = true; 
       }
-    } else {
-      for (var i = 0; i < this.todos.length; i++) {
-        this.todos[i].completed = true;
-      }
-    }
+    });
     view.displayTodos();
   }
 };
@@ -105,24 +103,24 @@ var view = {
   displayTodos: function () {
     var todosUlElement = document.querySelector("ul");
     todosUlElement.innerHTML = "";
-    for (var i = 0; i < todoList.todos.length; i++) {
-      var newLiElement = document.createElement("li");
-      var todoTextWithCompletetion = "";
-      var currentTodo = todoList.todos[i];
 
+    todoList.todos.forEach(function(currentTodo, i) {
+      var newLiElement = document.createElement("li");
+      var todoTextWithCompletion = "";
+    
       if (currentTodo.completed) {
-        todoTextWithCompletetion = "(x) " + currentTodo.todoText;
+        todoTextWithCompletion = "(x) " + currentTodo.todoText;
       } else {
-        todoTextWithCompletetion = "( ) " + currentTodo.todoText;
+        todoTextWithCompletion = "( ) " + currentTodo.todoText;
       }
 
       // set every id of new li to be equal to the index of the item
       newLiElement.id = i;
-      newLiElement.textContent = todoTextWithCompletetion;
+      newLiElement.textContent = todoTextWithCompletion;
       // create a delete button in the li
       newLiElement.appendChild(this.createDeleteButton());
       todosUlElement.appendChild(newLiElement);
-    }
+    }, view);
   },
 
   createDeleteButton: function () {
@@ -134,7 +132,7 @@ var view = {
   },
 
   setUpEventListeners: function () {
-    // use the entire ul as clickable, then only process clickes to the delete buttons
+    // use the entire ul as clickable, then only process clicks to the delete buttons
     // use button.parentNode.id (li.id)
     var todosUlElement = document.querySelector("ul");
 

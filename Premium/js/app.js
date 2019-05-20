@@ -32,6 +32,9 @@ jQuery(function ($) {
 			return count === 1 ? word : word + 's';
 		},
 
+
+		// can take one or two arguments.
+		// in init, the only argument is "todos-jquery", the namespace.
 		store: function (namespace, data) {
 			if (arguments.length > 1) {
 				return localStorage.setItem(namespace, JSON.stringify(data));
@@ -45,6 +48,7 @@ jQuery(function ($) {
 	var App = {
 		init: function () {
 			this.todos = util.store('todos-jquery');
+			// RHS: retrieves the template in HTML form. Compiles it to create a function
 			this.todoTemplate = Handlebars.compile($('#todo-template').html());
 			this.footerTemplate = Handlebars.compile($('#footer-template').html());
 			this.bindEvents();
@@ -57,11 +61,13 @@ jQuery(function ($) {
 			}).init('/all');
     },
 		
-		// something to think about, jQuery object. 
 		bindEvents: function () {
+			// the callback function is the bound create fuction, not the original create function. 
 			$('#new-todo').on('keyup', this.create.bind(this));
+			// if you didn't bind this, you can still run toggleAll, but "this" will refer to the toggle all button. 
 			$('#toggle-all').on('change', this.toggleAll.bind(this));
 			$('#footer').on('click', '#clear-completed', this.destroyCompleted.bind(this));
+			// ul event delegation. 
 			$('#todo-list')
 				.on('change', '.toggle', this.toggle.bind(this))
 				.on('dblclick', 'label', this.edit.bind(this))
@@ -75,6 +81,8 @@ jQuery(function ($) {
 			// filter is always set before rendering
 			// filter "all", "active", or "completed" will affect the view
 			var todos = this.getFilteredTodos();
+
+			// refer to line 48, todoTemplate is a function that will translate the todos accordingly. 
 			$('#todo-list').html(this.todoTemplate(todos));
 			
 			// this only shows if todos.length > 0
@@ -230,7 +238,6 @@ jQuery(function ($) {
 			}
 			this.render();
 		},
-
 
 		destroy: function (e) {
 			this.todos.splice(this.indexFromEl(e.target), 1);

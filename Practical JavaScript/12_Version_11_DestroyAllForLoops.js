@@ -103,8 +103,7 @@ var view = {
   displayTodos: function () {
     var todosUlElement = document.querySelector("ul");
     todosUlElement.innerHTML = "";
-    
-    todoList.todos.forEach(this.printOne);
+
 
     todoList.todos.forEach(function(currentTodo, i) {
       var newLiElement = document.createElement("li");
@@ -125,9 +124,6 @@ var view = {
     }, view);
   },
 
-  printOne: function() {
-    console.log("1"); 
-  }, 
 
   createDeleteButton: function () {
     var deleteButton = document.createElement("button");

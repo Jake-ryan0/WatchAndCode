@@ -1,0 +1,134 @@
+<script src="./simple_test_framework.js"></script>
+<script>
+
+function find(arr, callback, optionalThisArgument) {
+  var fixedArrLength = arr.length; 
+  
+  if (optionalThisArgument) {
+      var bindedCallback = callback.bind(optionalThisArgument);
+      callback = bindedCallback;
+  }
+
+
+  for(var i = 0; i < fixedArrLength; i++) {
+    var predicate = callback(arr[i], i, arr);
+    if (predicate) return arr[i];
+  }
+
+  return undefined; 
+};
+
+var testObj = {
+    description: 'I should be accessible inside the callback'
+};
+
+
+tests({
+  'It should return the value of the first element that satisfies the predicate': function() {
+    var arr = [
+      {name: 'apples', quantity: 2},
+      {name: 'bananas', quantity: 0},
+      {name: 'cherries', quantity: 5}
+    ];
+
+    var bananas = find(arr, function(element) {
+      return element.name === "bananas"
+    });
+
+    eq (bananas, arr[1]); 
+    
+  }, 
+
+  'It should return undefined if no element satisfies the predicate': function() {
+     var arr = [
+      {name: 'apples', quantity: 2},
+      {name: 'bananas', quantity: 0},
+      {name: 'cherries', quantity: 5}
+    ];
+
+    var pears = find(arr, function(element) {
+      return element.name === "pears"
+    });
+    eq (pears, undefined); 
+    
+  }, 
+
+  'It should take in an optionalThisArgument': function() {
+    find([ , 'item', , , 2, ,], function () {
+        eq(this.description, 'I should be accessible inside the callback');
+      }, testObj);
+  }, 
+
+  'The callback should have currentElement being processed as an argument': function() {
+    var arr = [99.2]
+    find(arr, function(currentElement) {
+      eq(currentElement, 99.2);
+    })
+  }, 
+
+  'The callback should have the currentIndex as an optional argument': function() {
+    var arr = [99.2]
+    find(arr, function(currentElement, currentIndex) {
+      eq(currentIndex, 0);
+    })
+  }, 
+
+  'The callback should have the original arr as an optional argument': function() {
+    var arr = [ , 99.2, 23, 'hello', , , , 'bye']
+    find(arr, function(currentElement, currentIndex, callbackArr) {
+      eq(callbackArr, arr);
+    })
+  }, 
+
+  'The callback should execute one time for every single index (including spaces)': function() {
+    var arr = [ , , 2, , 7, 'hello', , , 99.5 , , ]
+    var numTimesCallbackHasRun = 0;
+    find(arr, function() {
+      numTimesCallbackHasRun++; 
+    });
+    eq(numTimesCallbackHasRun, 10);
+  }, 
+
+  'The callback should execute one time for every single index (including deleted elements)': function() {
+    var arr = [ , , 61, , 7, 'hello', , , 99.5 ,'this item should be deleted', ]
+    var numTimesCallbackHasRun = 0;
+    find(arr, function(element, index, callbackArr) {
+      // delete item 9 (index 8) at a random point before it has been processed.
+      if (index === 2) callbackArr.splice(8, 1); 
+      // callback still runs for index 8 even when item 9 has been deleted. 
+      numTimesCallbackHasRun++; 
+    });
+    eq(numTimesCallbackHasRun, 10);
+  }, 
+
+  'The callback should only run x number of times as defined by the initial length of the array. (does not run for additional items appended after "find" has been called)': function() {
+    var arr = [ , , 61, , 7, 'hello', , , 99.5 ,'42ord', ]
+    var numTimesCallbackHasRun = 0;
+    find(arr, function(element, index, callbackArr) {
+      // add addtional item for every even index
+      if (index % 2 === 0) callbackArr.push('new item');  
+      numTimesCallbackHasRun++; 
+    });
+    eq(numTimesCallbackHasRun, 10);
+  }, 
+
+  'Callback should process updated elements as long as it is within range and has not been processed before': function() {
+    var arr = [
+      {name: 'apples', quantity: 2},
+      {name: 'bananas', quantity: 0},
+      {name: 'cherries', quantity: 5},
+      {name: 'blueberries', quantity: 27}
+    ];
+
+    var pears = find(arr, function(element, index, callbackArr) {
+      // update cherries to pears before cherries has been processed
+      if (index === 0) callbackArr[2] = {name: 'pears', quantity: 10};
+      return element.quantity === 10;
+    });
+
+    eq(pears, arr[2]);   
+  },
+
+});
+  
+</script>

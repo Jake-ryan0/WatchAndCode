@@ -1,0 +1,199 @@
+<script src="../tinytest.js"></script>
+<script>
+/*
+Prototype Implmentation
+
+reduce(arr, callback, optionalInitialValue) {
+  var currentValue = prevValue;
+    for(var i = 0; i < arr.length i++) {
+      currentValue = callback(preValue, currentValue, i, arr);
+  }
+  return currentValue;
+}
+
+*/
+
+function reduce(arr, callback, optionalInitialValue) {
+  var startingIndex = Object.keys(arr)[0];
+  var arrLength = arr.length; 
+  var prevValue = optionalInitialValue;
+  var arrIsEmpty = arrayIsEmptyCheck(arr); 
+
+  // if there is no initial value, callback starts from index 1, and prevValue starts from arr[0]
+  if (arguments.length < 3) {
+
+    // no intial value && array is empty.
+    if (arrIsEmpty) {
+      throw new TypeError("Follows native reduce method where there is no initial value"
+      , "and arr is empty");
+      return; 
+    }
+    // no intial value && only one element in arr
+    if (Object.keys(arr).length === 1) {
+      var indexOfOnlyElement = Object.keys(arr)[0];
+      return arr[indexOfOnlyElement];
+    }
+
+    prevValue = arr[startingIndex];
+    startingIndex++;
+  } else { // intial value is supplied
+    if (arrIsEmpty) return optionalInitialValue; 
+  }
+  
+  for(var i = startingIndex ; i < arrLength; i++) {
+    if (i in arr) prevValue = callback(prevValue, arr[i], i, arr);
+  }
+  return prevValue; 
+}; 
+
+function arrayIsEmptyCheck(arr) {
+  return Object.keys(arr).length === 0;
+}
+
+
+tests({
+  // Dealing with initialValue cases
+  'If initial value is provided, callback should run array.length times': function() {
+    var arr = ['hello', 5, 77];
+    var numTimesCallbackHasRun = 0;
+    reduce(arr, function(prevValue) {
+      numTimesCallbackHasRun++;
+    }, 10);
+    eq(numTimesCallbackHasRun, 3);
+  },
+
+  'If initial value is not provided, callback should run array.length - 1 times': function() {
+    var arr = ['hello', 5, 77];
+    var numTimesCallbackHasRun = 0;
+    reduce(arr, function(prevValue) {
+      numTimesCallbackHasRun++;
+    });
+    eq(numTimesCallbackHasRun, 2);
+  },
+
+  'If initial value is provided, prevValue should be initialized as initialValue': function() {
+    var arr = ['hello'];
+    reduce(arr, function(prevValue) {
+      eq(prevValue, 10);
+    }, 10);
+  },
+
+  'If initial value is provided, currentValue should be initialized as arr[0]': function() {
+    var arr = ['hello'];
+    reduce(arr, function(prevValue, currentValue) {
+      eq(currentValue, 'hello');
+    }, 10);
+  },
+  
+  'If initial value is provided, callback should start at index 0': function() {
+    var arr = ['only item'];
+    reduce(arr, function(prevValue, currentValue, currentIndex) {
+      eq(currentIndex, 0);
+    }, 10)
+  },
+
+  'If initial value is not provided, prevValue should be initialized as arr[0]': function() {
+    var arr = [4, 6];
+    reduce(arr, function(prevValue) {
+      eq(prevValue, 4);
+    })
+  },
+
+  'If initial value is not provided, currentValue should be initialized as arr[1]': function() {
+    var arr = [4, 6];
+    reduce(arr, function(prevValue, currentValue) {
+      eq(currentValue, 6);
+    })
+  },
+  
+  'If initial value is not provided, callback should start at index 1': function() {
+    var arr = [4, 6];
+    reduce(arr, function(prevValue, currentValue, currentIndex) {
+      eq(currentIndex, 1);
+    })
+  },
+
+  // Dealing with cases where there is only one value, either in the arr or initialValue regardless of holes in arr
+  'If initial value is provided, and array is empty, return initialValue without calling callback': function() {
+    var emptyArr = [ , , , , , , ];
+    var numTimesCallbackHasRun = 0;
+
+    var reduceResult = reduce(emptyArr, function() {
+      console.log('this callback is not supposed to run'); 
+      numTimesCallbackHasRun++;
+    }, 'initialValueSupplied');
+
+    eq (numTimesCallbackHasRun, 0);
+    eq(reduceResult, 'initialValueSupplied');
+  },
+
+  'If initial value is not provided, and array only has one element, return that element without calling callback': function() {
+    var arrWithOneElement = [ , , , , 'single item', , ];
+    var numTimesCallbackHasRun = 0;
+
+    var reduceResult = reduce(arrWithOneElement, function() {
+      console.log('this callback is not supposed to run'); 
+      numTimesCallbackHasRun++;
+    });
+
+    eq (numTimesCallbackHasRun, 0);
+    eq(reduceResult, 'single item');
+  },
+
+  // General + Edge cases
+  'It should actually reduce': function() {
+    var arr = [1, 2, 3, 4]; 
+    var reduceResult = reduce(arr, function(prevValue, currentValue) {
+      return prevValue * currentValue; 
+    }, 10)
+    eq(reduceResult, 240);
+  },
+  
+  'Callback should not run for holes in the array case 1: intial value supplied': function() {
+    var arr = [ , , , 1, , 2, , , 3, , 4, , ]; 
+    var numTimesCallbackHasRun = 0;
+    var reduceResult = reduce(arr, function(prevValue, currentValue) {
+      numTimesCallbackHasRun++;
+      return prevValue * currentValue; 
+    }, 10)
+
+    eq(numTimesCallbackHasRun, 4);
+    eq(reduceResult, 240);
+  },
+
+  
+  'Callback should not run for holes in the array case 2: intial value NOT supplied': function() {
+    var arr = [ , , , 1, , 2, , , 3, , 4, , 5, , , ]; 
+    var numTimesCallbackHasRun = 0;
+    var reduceResult = reduce(arr, function(prevValue, currentValue) {
+      numTimesCallbackHasRun++;
+      return prevValue * currentValue; 
+    })
+
+    eq(numTimesCallbackHasRun, 4);
+    eq(reduceResult, 120);
+  },
+
+  'It should pass array as 4th argument as callback': function() {
+    var arr = [4, 6, 'c', 81];
+    reduce(arr, function(prevValue, currentValue, currentIndex, arrPassedIntoCallback) {
+      eq(arrPassedIntoCallback, arr);
+    })
+  },
+
+  'Return type error if array is empty an there is no intial value': function() {
+    var arr = [ , , , , ];
+    var isTypeError = false; 
+
+    try {
+      reduce(arr, function() {
+
+      });
+    } catch (e) {
+      var isTypeError = e instanceof TypeError;
+    }
+    eq(isTypeError, true); 
+  }
+
+});
+</script>

@@ -1,0 +1,87 @@
+<script src="../tinytest.js"></script>
+<script>
+
+  // Case 1
+  //  forEach(arr, f() {
+  //    console.log('hi');
+  //   });
+
+  // Case 2
+  //  forEach(arr, f(item) {
+  //    console.log(item);
+  //   });
+
+  // Case 3
+  //  forEach(arr, f(item, currentIndex) {
+  //    console.log(currentIndex);
+  //    console.log(item);
+  //   });
+
+  // Case 4
+  //  forEach(arr, f(item, currentIndex, arr) {
+  //    console.log(item);
+  //    console.log(currentIndex);
+  //    console.log(arr);
+  //   });
+
+  // Case 5
+  //  forEach(arr, f(item, currentIndex, arr) {
+  //    console.log(item);
+  //    console.log(currentIndex);
+  //    console.log(arr);
+  //    this.propertyFromOuterObj;
+  //   }, this);
+
+
+  function forEach(array, callback, optionalThisObject) {
+    if (optionalThisObject) {
+      var bindedCallback = callback.bind(optionalThisObject);
+      callback = bindedCallback;
+    }
+
+    for (var i = 0; i < array.length; i++) {
+      callback(array[i], i, array);
+    }
+  }
+
+  var testObj = {
+    description: 'I should be accessible inside the callback'
+  };
+
+  tests({
+
+    'It should run the callback function array.length times': function () {
+      var numOfTimesCallbackHasRun = 0;
+      forEach([94, 21, 6], function () {
+        numOfTimesCallbackHasRun++;
+      });
+      eq(numOfTimesCallbackHasRun, 3);
+    },
+
+    'It should pass in each element of the array as the first argument in callback function': function () {
+      forEach(['z'], function (element) {
+        eq(element, 'z');
+      });
+    },
+
+    'It should pass in the currentIndex for each element': function () {
+      forEach(['a'], function (element, index) {
+        eq(index, 0);
+      });
+    },
+
+    'It should pass in the array that forEach is acting on': function () {
+      var passedInArray = ['a', 36, 'hello'];
+      forEach(passedInArray, function (element, index, arr) {
+        eq(arr, passedInArray);
+      });
+    },
+
+    'It should accept an optional this object': function () {
+      forEach(['item'], function () {
+        eq(this.description, 'I should be accessible inside the callback');
+      }, testObj);
+    }
+
+  });
+</script>

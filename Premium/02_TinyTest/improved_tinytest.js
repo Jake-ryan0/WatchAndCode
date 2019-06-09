@@ -40,14 +40,14 @@
 
 
 var TinyTestUtil = {
-    renderTestingSummary: function(tests, failures) {
+    renderTestingSummary: function (tests, failures) {
         var numTestsRun = Object.keys(tests).length;
         var numFailures = failures;
         var numSuccesses = numTestsRun - numFailures;
 
         var summaryString = 'Ran ' + numTestsRun + " tests: "
-                                + numSuccesses + ' successes, '
-                                + numFailures + ' failures.';
+            + numSuccesses + ' successes, '
+            + numFailures + ' failures.';
 
         var summaryElement = document.createElement('h1');
         summaryElement.textContent = summaryString;
@@ -57,64 +57,64 @@ var TinyTestUtil = {
 }
 
 var TinyTest = {
+    
+    run: function (tests) {
 
-    run: function(tests) {
-        
-      var failures = 0;
-      var numTestsRun = Object.keys(tests).length; 
-      var numSuccesses = numTestsRun - failures; 
+        var failures = 0;
+        var numTestsRun = Object.keys(tests).length;
+        var numSuccesses = numTestsRun - failures;
 
-      for (var testName in tests) {
-          var testAction = tests[testName];
-          try {
-              testAction.apply(this);
-              var passMessage = '%c' + testName;
-              console.log(passMessage, "color:green;");
-          } catch (e) {
-              failures++;
-              var failMessage = '%c' + testName;
-              console.groupCollapsed(failMessage, 'color:red;');
-              console.error(e.stack);
-              console.groupEnd(); 
-          }
-      }
+        for (var testName in tests) {
+            var testAction = tests[testName];
+            try {
+                testAction.apply(this);
+                var passMessage = '%c' + testName;
+                console.log(passMessage, "color:green;");
+            } catch (e) {
+                failures++;
+                var failMessage = '%c' + testName;
+                console.groupCollapsed(failMessage, 'color:red;');
+                console.error(e.stack);
+                console.groupEnd();
+            }
+        }
 
-      setTimeout(function() { // Give document a chance to complete
-          if (window.document && document.body) {
-              document.body.style.backgroundColor = (failures == 0 ? '#99ff99' : '#ff9999');
-          }
+        setTimeout(function () { // Give document a chance to complete
+            if (window.document && document.body) {
+                document.body.style.backgroundColor = (failures == 0 ? '#99ff99' : '#ff9999');
+            }
 
-          TinyTestUtil.renderTestingSummary(tests, failures);
-      }, 0);
-  },
+            TinyTestUtil.renderTestingSummary(tests, failures);
+        }, 0);
+    },
 
-  fail: function(msg) {
-      throw new Error('fail(): ' + msg);
-  },
+    fail: function (msg) {
+        throw new Error('fail(): ' + msg);
+    },
 
-  assert: function(value, msg) {
-      if (!value) {
-          throw new Error('assert(): ' + msg);
-      }
-  },
+    assert: function (value, msg) {
+        if (!value) {
+            throw new Error('assert(): ' + msg);
+        }
+    },
 
-  assertEquals: function(expected, actual) {
-      if (expected != actual) {
-          throw new Error('assertEquals() "' + expected + '" != "' + actual + '"');
-      }
-  },
+    assertEquals: function (expected, actual) {
+        if (expected != actual) {
+            throw new Error('assertEquals() "' + expected + '" != "' + actual + '"');
+        }
+    },
 
-  assertStrictEquals: function(expected, actual) {
-      if (expected !== actual) {
-          throw new Error('assertStrictEquals() "' + expected + '" !== "' + actual + '"');
-      }
-  },
+    assertStrictEquals: function (expected, actual) {
+        if (expected !== actual) {
+            throw new Error('assertStrictEquals() "' + expected + '" !== "' + actual + '"');
+        }
+    },
 
 };
 
-var fail               = TinyTest.fail.bind(TinyTest),
-    assert             = TinyTest.assert.bind(TinyTest),
-    assertEquals       = TinyTest.assertEquals.bind(TinyTest),
-    eq                 = TinyTest.assertEquals.bind(TinyTest), // alias for assertEquals
+var fail = TinyTest.fail.bind(TinyTest),
+    assert = TinyTest.assert.bind(TinyTest),
+    assertEquals = TinyTest.assertEquals.bind(TinyTest),
+    eq = TinyTest.assertEquals.bind(TinyTest), // alias for assertEquals
     assertStrictEquals = TinyTest.assertStrictEquals.bind(TinyTest),
-    tests              = TinyTest.run.bind(TinyTest);
+    tests = TinyTest.run.bind(TinyTest);

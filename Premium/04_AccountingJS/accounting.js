@@ -394,6 +394,8 @@
 		// Use accounting.noConflict to restore `accounting` back to its original value.
 		// Returns a reference to the library's `accounting` object;
 		// e.g. `var numbers = accounting.noConflict();`
+		
+
 		lib.noConflict = (function(oldAccounting) {
 			return function() {
 				// Reset the value of the root's `accounting` variable:
@@ -403,7 +405,22 @@
 				// Return reference to the library to re-assign it:
 				return lib;
 			};
-		})(root.accounting);
+		})(root.accounting); 
+
+		/*
+
+		// oldAccounting will always be a reference to accounting = 'JX's library'
+		// bc line 426 has not run yet.
+		var oldAccounting = root.accounting; 
+		lib.noConflict = function() {
+			// after the IIFE has run, the root.accounting is set to lib
+			// now you want to set root.accounting to 'JX's library'
+			// return the actual lib. 
+			root.accounting = oldAccounting; 
+			return lib; 
+		}
+
+		*/
 
 		// Declare `fx` on the root (global/window) object:
 		root['accounting'] = lib;

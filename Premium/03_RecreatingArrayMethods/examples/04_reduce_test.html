@@ -24,10 +24,11 @@ function reduce(arr, callback, optionalInitialValue) {
 
     // no intial value && array is empty.
     if (arrIsEmpty) {
-      throw new TypeError("Follows native reduce method where there is no initial value"
-      , "and arr is empty");
+      throw new TypeError(`Follows native reduce method where there is no initial value
+      and arr is empty`);
       return; 
     }
+
     // no intial value && only one element in arr
     if (Object.keys(arr).length === 1) {
       var indexOfOnlyElement = Object.keys(arr)[0];

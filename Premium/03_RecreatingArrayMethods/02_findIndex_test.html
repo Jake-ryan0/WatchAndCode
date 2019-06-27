@@ -1,0 +1,123 @@
+<script src="./simple_test_framework.js"></script>
+<script>
+
+const optionalThisArg = {
+  val: 'I should be accessible inside the callback'
+};
+
+
+
+function findIndex(arr, callback, optionalThis) {
+  const ARR_LENGTH = arr.length; 
+
+  if (arguments.length === 3) {
+    var callback = callback.bind(optionalThis);
+  }
+
+  for(let i = 0; i < ARR_LENGTH; i++) {
+    let predicate = callback(arr[i], i, arr);
+    if (predicate) return i; 
+  }
+  return -1;
+};
+
+tests ({
+  'It should return the index of the first element that satisfies the callback predicate' : function() {
+    let arr = [-3, 2, 8, 44];
+    let index = findIndex(arr, x => x > 0); 
+    eq(index, 1);
+  },
+
+  'It should return -1 if no elements in the arr satisfy the callback predicate' : function() {
+    let arr = [-3, 2, 8, 44, 64];
+    let index = findIndex(arr, x => x > 100); 
+    eq(index, -1);
+  },
+
+  'It should take in an optional "this" arg' : function() { 
+    let arr = [1, 2];
+    findIndex(arr, function() {
+      eq(this.val, 'I should be accessible inside the callback');  
+    }, optionalThisArg);
+  },
+
+  'The callback should take in current element being processed as first parameter' : function() {
+    let arr = ['first arg'];
+    findIndex(arr, function(currentElement) {
+      eq(currentElement, 'first arg');
+    });
+  },
+
+  'The callback should have the currentIndex as an optional argument' : function() {
+    var arr = [99.2]
+    find(arr, function(currentElement, currentIndex) {
+      eq(currentIndex, 0);
+    })
+  },
+
+  'The callback should have the original array as an optional argument' : function() {
+    var arr = [ , 99.2, 23, 'hello', , , , 'bye']
+    findIndex(arr, function(currentElement, currentIndex, callbackArr) {
+      eq(callbackArr, arr);
+    })
+  },
+  
+ 
+  'The callback should execute once for every single index (including spaces)' : function() {
+    let arr = [ , , 2, , 7, 'hello', , , 99.5 , , ]
+    let numTimesCallbackHasRun = 0;
+    findIndex(arr, function() {
+      numTimesCallbackHasRun++;
+    });
+    eq(numTimesCallbackHasRun, 10);
+  },
+
+  'The callback should execute once for every single index (including deleted elements)' : function() {
+    let arr = [ , , 2, , 7, 'hello', 'this item should be deleted', , 99.5, , ]
+    let numTimesCallbackHasRun = 0;
+    eq(arr.length, 10);
+
+    findIndex(arr, function(currentElement, currentIndex, callbackArr) { 
+      if (currentIndex === 2) {
+        delete arr[6];
+        eq(callbackArr[6], undefined);
+      }
+      numTimesCallbackHasRun++;
+    });
+
+    eq(numTimesCallbackHasRun, 10);
+  },
+
+
+  'The callback should only run x number of times as defined by the initial length of the array. (Items appended after findIndex has been called will not be processed)' : function() {
+    let arr = [1, 2, 3, 4, 5];
+    let numTimesCallbackHasRun = 0;
+
+    findIndex(arr, function(currentElement, currentIndex, callbackArr) {
+      if (currentIndex % 2 === 0) arr.push('random item');
+      numTimesCallbackHasRun++
+    });  
+    eq(numTimesCallbackHasRun, 5);
+  },
+
+  'Callback should process updated elements that have not been processed before' : function() {
+    let arr = [
+      {name: 'apples', quantity: 2},
+      {name: 'bananas', quantity: 0},
+      {name: 'cherries', quantity: 5},
+      {name: 'blueberries', quantity: 27}
+    ];
+
+    let indexTwoSatisfiesThePredicate = findIndex(arr, function(element, index, callbackArr) {
+      // update cherries to pears before cherries has been processed
+      if (index === 0) callbackArr[2] = {name: 'pears', quantity: 10};
+      return element.quantity === 10;
+    });
+
+    eq(indexTwoSatisfiesThePredicate, 2);  
+  }
+  
+
+})
+
+</script>

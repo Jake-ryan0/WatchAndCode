@@ -90,12 +90,15 @@ tests({
   }, 
 
   'The callback should execute one time for every single index (including deleted elements)': function() {
-    var arr = [ , , 61, , 7, 'hello', , , 99.5 ,'this item should be deleted', ]
+    var arr = [ , , 61, , 7, 'hello', 'this item should be deleted' , , 99.5, ,]
     var numTimesCallbackHasRun = 0;
     find(arr, function(element, index, callbackArr) {
-      // delete item 9 (index 8) at a random point before it has been processed.
-      if (index === 2) callbackArr.splice(8, 1); 
-      // callback still runs for index 8 even when item 9 has been deleted. 
+      // delete item 7 (index 6) at a random point before it has been processed.
+      if (index === 2) {
+        callbackArr.splice(6, 1); 
+        eq(callbackArr.length, 9);
+        eq(callbackArr, arr);
+      }
       numTimesCallbackHasRun++; 
     });
     eq(numTimesCallbackHasRun, 10);

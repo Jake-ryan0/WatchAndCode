@@ -1,0 +1,70 @@
+<script src="./simple_test_framework.js"></script>
+<script>
+
+const optionalThisArg = {
+  val: 'I should be accessible inside the callback'
+};
+
+function indexHasElementAssigned(i, arr) {
+  return Object.keys(arr).includes(i.toString()); 
+}
+
+function every(arr, callback, optionalThisArg) { 
+  if (arguments.length > 2) {
+    callback = callback.bind(optionalThisArg); 
+  } 
+
+  for(let i = 0; i < arr.length; i++) {
+    if (indexHasElementAssigned(i, arr)) {
+      callback(arr[i], i, arr);
+    } 
+  }
+};
+
+
+tests({
+  'It should take in an optional "this" arg' : function() { 
+    let arr = [1, 2];
+    every(arr, function() {
+      eq(this.val, 'I should be accessible inside the callback');  
+    }, optionalThisArg);
+  },
+
+
+  'The callback should take in current element being processed as first parameter' : function() {
+    let arr = ['first arg'];
+    every(arr, function(currentElement) {
+      eq(currentElement, 'first arg');
+    });
+  },
+
+  'The callback should have the currentIndex as an optional argument' : function() {
+    let arr = [99.2]
+    every(arr, function(currentElement, currentIndex) {
+      eq(currentIndex, 0);
+    })
+  },
+
+  'The callback should have the original array as an optional argument' : function() {
+    let arr = [ , 99.2, 23, 'hello', , , , 'bye']
+    every(arr, function(currentElement, currentIndex, callbackArr) {
+      eq(callbackArr, arr);
+    })
+  },
+
+  'It should execute the callback once for every element with an assigned value': function() {
+    var numOfTimesCallbackHasRun = 0;
+      every([ , , 94, , , , 21, 6 , 'hi', ], function () {
+        numOfTimesCallbackHasRun++;
+      });
+      eq(numOfTimesCallbackHasRun, 4);
+  },
+  
+  'It should return true if the callback function returns true for every element with an assigned value': function() {
+    fail();
+  },
+
+
+});
+
+</script>

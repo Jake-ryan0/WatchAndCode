@@ -54,11 +54,11 @@
 	 * from underscore.js
 	 */
 	function isString(obj) {
-		return !!(obj === '' || (obj && obj.charCodeAt && obj.substr));
+		return Boolean(obj === '' || (obj && obj.charCodeAt && obj.substr));
 	}
 
 	/**
-	 * Tests whether supplied parameter is a string
+	 * Tests whether supplied parameter is an array
 	 * from underscore.js, delegates to ECMA5's native Array.isArray
 	 */
 	function isArray(obj) {
@@ -69,7 +69,7 @@
 	 * Tests whether supplied parameter is a true object
 	 */
 	function isObject(obj) {
-		return obj && toString.call(obj) === '[object Object]';
+		return Boolean(obj && toString.call(obj) === '[object Object]');
 	}
 
 	/**
@@ -85,7 +85,7 @@
 		for (key in defs) {
 			if (defs.hasOwnProperty(key)) {
 				// Replace values with defaults only if undefined (allow empty/zero values):
-				if (object[key] == null) object[key] = defs[key];
+				if (object[key] === undefined) object[key] = defs[key];
 			}
 		}
 		return object;
@@ -124,14 +124,22 @@
 	/**
 	 * Parses a format string or object and returns format obj for use in rendering
 	 *
-	 * `format` is either a string with the default (positive) format, or object
-	 * containing `pos` (required), `neg` and `zero` values (or a function returning
-	 * either a string or object)
-	 *
-	 * Either string or format.pos must contain "%v" (value) to be valid
-	 */
+	 * Parameters: 
+	 * a) String: default (positive) format that must contain "%v" 
+	 * b) Object: `pos` (required) and must contain "%v", `neg` and `zero` 
+	 * c) Function: Returns either a string or object 
+	 * 
+	 * Returns: 
+	 * Object = {
+	 * 	pos : format,
+   *	neg : format.replace("%v", "-%v"),
+	 *	zero : format
+	 * }
+	*/
+
+	
 	function checkCurrencyFormat(format) {
-		var defaults = lib.settings.currency.format;
+		var defaults = lib.settings.currency.format; //"%s%v" the first time but after that it is an object
 
 		// Allow function as format parameter (should return string or object):
 		if ( typeof format === "function" ) format = format();
@@ -142,25 +150,24 @@
 			// Create and return positive, negative and zero formats:
 			return {
 				pos : format,
-				neg : format.replace("-", "").replace("%v", "-%v"),
+				neg : format.replace("%v", "-%v"),
 				zero : format
 			};
 
 		// If no format, or object is missing valid positive value, use defaults:
 		} else if ( !format || !format.pos || !format.pos.match("%v") ) {
 
-			// If defaults is a string, casts it to an object for faster checking next time:
-			return ( !isString( defaults ) ) ? defaults : lib.settings.currency.format = {
+			// If defaults is a string, casts it to an object to be returned. If defaults is alr an obj, return it.
+			return !(isString(defaults)) ? defaults : lib.settings.currency.format = {
 				pos : defaults,
 				neg : defaults.replace("%v", "-%v"),
 				zero : defaults
-			};
-
+			}
 		}
 		// Otherwise, assume format was fine:
 		return format;
 	}
-
+	
 
 	/* --- API Methods --- */
 
@@ -221,6 +228,15 @@
 		return (Math.round(lib.unformat(value) * power) / power).toFixed(precision);
 	};
 
+	function improvedToFixed(value, precision) {
+		// eg 1.005 * 100 = 149.999999
+		// exponential notation moves the decimal place over instead of directly multiplying.
+		let exponentionalForm = Number(value + 'e' + precision);
+		let rounded = Math.round(exponentionalForm);
+		let result = Number(rounded + 'e-' + precision);	
+		// calls native because number has a method 'toFixed'
+		return result.toFixed(precision);
+	}
 
 	/**
 	 * Format a number, with comma-separated thousands and custom precision/decimal places
@@ -410,7 +426,7 @@
 		/*
 
 		// oldAccounting will always be a reference to accounting = 'JX's library'
-		// bc line 426 has not run yet.
+		// bc line 434 has not run yet. and because of closure, when you run it wayyyy after the app runs
 		var oldAccounting = root.accounting; 
 		lib.noConflict = function() {
 			// after the IIFE has run, the root.accounting is set to lib

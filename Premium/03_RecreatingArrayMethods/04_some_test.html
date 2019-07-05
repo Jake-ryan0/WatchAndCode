@@ -1,0 +1,157 @@
+<script src="./simple_test_framework.js"></script>
+<script>
+
+/*
+  Did not account for the fact that Array.prototype.some does not mutate on the array on which it is called
+  Will account for it in subsequent methods.
+*/
+
+const optionalThisArg = {
+  val: 'I should be accessible inside the callback'
+};
+
+
+function some(arr, callback, optionalThisArg) { 
+  const length = arr.length; 
+
+  if (arguments.length > 2) {
+    callback = callback.bind(optionalThisArg); 
+  } 
+
+  for(let i = 0; i < length; i++) {
+    if (i in arr) {
+      let predicateResult = Boolean(callback(arr[i], i, arr));
+      if (predicateResult === true) return true;
+    }
+  }
+
+  return false; 
+};
+
+
+tests({
+  'The callback should take in current element being processed as first parameter' : function() {
+    let arr = ['first arg'];
+    some(arr, function(currentElement) {
+      eq(currentElement, 'first arg');
+    });
+  },
+
+  'The callback should have the currentIndex as an optional argument' : function() {
+    let arr = [99.2]
+    some(arr, function(currentElement, currentIndex) {
+      eq(currentIndex, 0);
+    })
+  },
+
+  'The callback should have the original array as an optional argument' : function() {
+    let arr = [ , 99.2, 23, 'hello', , , , 'bye']
+    some(arr, function(currentElement, currentIndex, callbackArr) {
+      eq(callbackArr, arr);
+    })
+  },
+
+  'It should take in an optional "this" arg' : function() { 
+    let arr = [1, 2];
+    some(arr, function() {
+      eq(this.val, 'I should be accessible inside the callback');  
+    }, optionalThisArg);
+  },
+
+  
+  'It should execute the callback once for every element with an assigned value': function() {
+    let numOfTimesCallbackHasRun = 0;
+      some([ , , 94, , , , 21, 6 , 'hi', ], function (x) {
+        numOfTimesCallbackHasRun++;
+        // even though !undefined is === true, holes are not processed, only !94, !21, !6 and !'hi' are processed
+        return !x;
+      });
+      eq(numOfTimesCallbackHasRun, 4);
+  },
+  
+  'It should return true when the callback function encounters an element (with an assigned value) that returns truthy': function() {
+    let arr = [1, 4, 7, 91, 57, 22];
+    let result = some(arr, function(x) {
+      return x > 50; 
+    });
+    eq(result, true);
+  },
+
+  'It should return false when if the callback function returns false for all elements with an assigned value': function() {
+    let arr = [1, 4, 7, 91, 57, 22];
+    let result = some(arr, function(x) {
+      return x > 100; 
+    });
+    eq(result, false);
+  },
+
+  'It should return false for an empty array': function() {
+    let arr1 = [ , , , ]; 
+    let result1 = some(arr1, function(x) {
+      return x; 
+    });
+    eq(result1, false);
+
+    let arr2 = []; 
+    let result2 = some(arr1, function(x) {
+      return x < 100; 
+    });
+    eq(result2, false);
+  },
+
+  'The callback should only run x number of times as defined by the initial length of the array. (Items appended after some has been called will not be processed)' : function() {
+    let arr = [1, 2, 3, 4, 5];
+    let numTimesCallbackHasRun = 0;
+
+   some(arr, function(currentElement, currentIndex, callbackArr) {
+      if (currentIndex % 2 === 0) arr.push('random item');
+      numTimesCallbackHasRun++
+      return false;
+    });  
+    eq(numTimesCallbackHasRun, 5);
+  },
+
+  
+  'Callback should process updated elements that have not been processed before' : function() {
+    let arr = [
+      {name: 'apples', quantity: 66},
+      {name: 'bananas', quantity: 0},
+      {name: 'cherries', quantity: 5},
+      {name: 'blueberries', quantity: 27}
+    ];
+
+    let initallyReturnsFalse = some(arr, x => x.quantity > 100);
+    eq(initallyReturnsFalse, false);
+
+    let updatedElementMakesFunctionReturnTrue = some(arr, function(element, index, callbackArr) {
+      // update quantity of bananas from 0 to 10 it has been processed
+      if (index === 0) callbackArr[1] = {name: 'bananas', quantity: 999};
+      return element.quantity > 100;
+    });
+
+    eq(updatedElementMakesFunctionReturnTrue, true);  
+  }, 
+
+  'Elements that are deleted are not processed by callback': function() {
+    let arr = [ , , 2, , 7, 'hello', 'this item should be deleted', , 99.5, , ]
+    let numTimesCallbackHasRun = 0;
+    
+
+   some(arr, function(currentElement, currentIndex, callbackArr) { 
+      if (currentIndex === 2) {
+        delete arr[6];
+        eq(6 in callbackArr, false);
+        eq()
+      }
+      numTimesCallbackHasRun++;
+      return false;
+    });
+
+    eq(numTimesCallbackHasRun, 4);
+  },
+  
+
+})
+
+
+</script>

@@ -1,6 +1,13 @@
 <script src="./simple_test_framework.js"></script>
 <script>
 
+/* 
+  Instead of creating a function to check if index is assigned,
+  Will use 'index in array' for future methods
+  
+*/
+
+
 const optionalThisArg = {
   val: 'I should be accessible inside the callback'
 };
@@ -9,16 +16,23 @@ function indexHasElementAssigned(i, arr) {
   return Object.keys(arr).includes(i.toString()); 
 }
 
+
+
 function every(arr, callback, optionalThisArg) { 
+  const length = arr.length; 
+
   if (arguments.length > 2) {
     callback = callback.bind(optionalThisArg); 
   } 
 
-  for(let i = 0; i < arr.length; i++) {
+  for(let i = 0; i < length; i++) {
     if (indexHasElementAssigned(i, arr)) {
-      callback(arr[i], i, arr);
-    } 
+      let predicateResult = Boolean(callback(arr[i], i, arr));
+      if (predicateResult === false) return false;
+    }
   }
+
+  return true; 
 };
 
 
@@ -53,17 +67,117 @@ tests({
   },
 
   'It should execute the callback once for every element with an assigned value': function() {
-    var numOfTimesCallbackHasRun = 0;
-      every([ , , 94, , , , 21, 6 , 'hi', ], function () {
+    let numOfTimesCallbackHasRun = 0;
+      every([ , , 94, , , , 21, 6 , 'hi', ], function (x) {
         numOfTimesCallbackHasRun++;
+        return x;
       });
       eq(numOfTimesCallbackHasRun, 4);
   },
   
-  'It should return true if the callback function returns true for every element with an assigned value': function() {
-    fail();
+  'It should return true if the callback function returns truthy for every element with an assigned value': function() {
+    let arr = [1, 4, 7, 91, 57, 22];
+    let result = every(arr, function(x) {
+      return x < 100; 
+    });
+    eq(result, true);
   },
 
+  'It should return true for an empty array': function() {
+    let arr1 = [ , , , ]; 
+    let result1 = every(arr1, function(x) {
+      return x < 100; 
+    });
+    eq(result1, true);
+
+    let arr2 = []; 
+    let result2 = every(arr1, function(x) {
+      return x < 100; 
+    });
+    eq(result2, true);
+  },
+
+  'It should return false if one element in the array returns falsy (NaN, "" , 0, undefined, null) for the predicate': function() {
+    // 0
+    let arr1 = ['string1', 33, , , 0, true, ,]; 
+    let result1 = every(arr1, x => x);
+    eq(result1, false);
+
+    // NaN
+    let arr2 = ['string1', 33, NaN, , , true, ,]; 
+    let result2 = every(arr2, x => x);
+    eq(result2, false);
+
+    // empty string
+    let arr3 = ['', 33, 'string x', , , true, ,]; 
+    let result3 = every(arr3, x => x);
+    eq(result3, false);
+
+    //undefined
+    let arr4 = ['okay array', 33, 'string x', , , true, ,]; 
+    let result4 = every(arr4, x => undefined);
+    eq(result4, false);
+    
+    // null
+    let arr5 = ['okay array', null, 'string x', , 3, true, ,]; 
+    let result5 = every(arr5, x => x);
+    eq(result5, false);
+    
+    let arr6 = ['adfsfshdhs', , 'shyywywyw', 'very long string', , ,]; 
+    let result6 = every(arr6, x => x.length < 2);
+    eq(result6, false);
+  }, 
+
+  'The callback should only run x number of times as defined by the initial length of the array. (Items appended after every has been called will not be processed)' : function() {
+    let arr = [1, 2, 3, 4, 5];
+    let numTimesCallbackHasRun = 0;
+
+    every(arr, function(currentElement, currentIndex, callbackArr) {
+      if (currentIndex % 2 === 0) arr.push('random item');
+      numTimesCallbackHasRun++
+      return true;
+    });  
+    eq(numTimesCallbackHasRun, 5);
+  },
+
+  
+  'Callback should process updated elements that have not been processed before' : function() {
+    let arr = [
+      {name: 'apples', quantity: 66},
+      {name: 'bananas', quantity: 0},
+      {name: 'cherries', quantity: 5},
+      {name: 'blueberries', quantity: 27}
+    ];
+
+    let initallyReturnsFalse = every(arr, x => x.quantity > 3);
+    eq(initallyReturnsFalse, false);
+
+    let updatedElementMakesFunctionReturnTrue = every(arr, function(element, index, callbackArr) {
+      // update quantity of bananas from 0 to 10 it has been processed
+      if (index === 0) callbackArr[1] = {name: 'bananas', quantity: 10};
+      return element.quantity > 3;
+    });
+
+    eq(updatedElementMakesFunctionReturnTrue, true);  
+  }, 
+
+  'Elements that are deleted are not processed by callback': function() {
+    let arr = [ , , 2, , 7, 'hello', 'this item should be deleted', , 99.5, , ]
+    let numTimesCallbackHasRun = 0;
+    
+
+    every(arr, function(currentElement, currentIndex, callbackArr) { 
+      if (currentIndex === 2) {
+        delete arr[6];
+        eq(callbackArr[6], undefined);
+      }
+      numTimesCallbackHasRun++;
+      return true;
+    });
+
+    eq(numTimesCallbackHasRun, 4);
+  },
+  
 
 });
 

@@ -54,7 +54,7 @@
 	 * from underscore.js
 	 */
 	function isString(obj) {
-		return Boolean(obj === '' || (obj && obj.charCodeAt && obj.substr));
+		return (obj === '' || Boolean(obj && obj.charCodeAt && obj.substr));
 	}
 
 	/**
@@ -67,6 +67,8 @@
 
 	/**
 	 * Tests whether supplied parameter is a true object
+	 * ie not an null, undefined, 0, NaN, and also not Array, Number, String etc
+	 * if you don't wrap it in Boolean, return toString.call(null) === null instead of false.
 	 */
 	function isObject(obj) {
 		return Boolean(obj && toString.call(obj) === '[object Object]');
@@ -145,7 +147,7 @@
 		if ( typeof format === "function" ) format = format();
 
 		// Format can be a string, in which case `value` ("%v") must be present:
-		if ( isString( format ) && format.match("%v") ) {
+		if ( isString(format) && format.match("%v") ) {
 
 			// Create and return positive, negative and zero formats:
 			return {
@@ -168,6 +170,7 @@
 		return format;
 	}
 	
+	// lib.checkCurrencyFormat1 = checkCurrencyFormat;
 
 	/* --- API Methods --- */
 
@@ -224,18 +227,19 @@
 		precision = checkPrecision(precision, lib.settings.number.precision);
 		var power = Math.pow(10, precision);
 
-		// Multiply up by precision, round accurately, then divide and use native toFixed():
+		// Multiply up by precision, round accurately, then divide and uses Number.toFixed(precision)
+		// if you wish to use the implemented toFixed(), its toFixed(123, 2) vs 123.toFixed(2) 
 		return (Math.round(lib.unformat(value) * power) / power).toFixed(precision);
 	};
 
 	function improvedToFixed(value, precision) {
-		// eg 1.005 * 100 = 149.999999
+		// eg 1.005 * 100 = 100.4999999
 		// exponential notation moves the decimal place over instead of directly multiplying.
-		let exponentionalForm = Number(value + 'e' + precision);
-		let rounded = Math.round(exponentionalForm);
-		let result = Number(rounded + 'e-' + precision);	
-		// calls native because number has a method 'toFixed'
-		return result.toFixed(precision);
+		let exponentionalForm = Number(value + 'e' + precision); // 1.0033352342 * 10^2 (if 1.3415 * 10^2 no problem)
+		let rounded = Math.round(exponentionalForm); // 100.3353342 => 100 (134.15 => 134) ie remove all the decimals that are not needed
+		let result = Number(rounded + 'e-' + precision); // 100 => 1.00 instead of 100 / 100 which will give 1 (134 / 100 = 1.34)
+		// calls Number.toFixed
+		return result.toFixed(precision); // 1.toFixed(2) => 1.00
 	}
 
 	/**

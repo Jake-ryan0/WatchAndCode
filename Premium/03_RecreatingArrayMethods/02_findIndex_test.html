@@ -49,7 +49,7 @@ tests ({
   },
 
   'The callback should have the currentIndex as an optional argument' : function() {
-    var arr = [99.2]
+    let arr = [99.2]
     find(arr, function(currentElement, currentIndex) {
       eq(currentIndex, 0);
     })

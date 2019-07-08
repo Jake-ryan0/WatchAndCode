@@ -1,8 +1,10 @@
 <script src="./simple_test_framework.js"></script>
 <script>
 
+
+
 function find(arr, callback, optionalThisArgument) {
-  var fixedArrLength = arr.length; 
+  const fixedArrLength = arr.length; 
   
   if (optionalThisArgument) {
       var bindedCallback = callback.bind(optionalThisArgument);

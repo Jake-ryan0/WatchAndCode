@@ -12,7 +12,7 @@
  *       return a + b;
  *     }
  *
- *   adder-test.html (tests - just open a browser to see results)
+ *   adder-test.html (tests - open a browser to see results)
  *
  *     <script src="tinytest.js"></script>
  *     <script src="adder.js"></script>

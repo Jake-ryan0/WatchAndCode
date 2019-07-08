@@ -78,7 +78,7 @@ tests({
   },
 
   'It should return false when if the callback function returns false for all elements with an assigned value': function() {
-    let arr = [1, 4, 7, 91, 57, 22];
+    let arr = [1, 5, 7, 91, 57, 22];
     let result = some(arr, function(x) {
       return x > 100; 
     });

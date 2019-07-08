@@ -1,0 +1,134 @@
+<script src="../tinytest.js"></script>
+<script>
+
+  // Case 1
+  //  map(arr, f() {
+  //    return "hello";
+  //   });
+
+  // Case 2
+  //  map(arr, f(item) {
+  //    return (item + 1);
+  //   });
+
+  // Case 3
+  //  map(arr, f(item, currentIndex) {
+  //    console.log(currentIndex);
+  //   });
+
+  // Case 4
+  //  forEach(arr, f(item, currentIndex, arr) {
+  //    console.log(arr);
+  //   });
+
+  // Case 5
+  //  forEach(arr, f() {
+  //    console.log(this.propertyFromOuterObj);
+  //   }, this);
+
+  // Case 6:
+  // var testArr = ['d', 'f', 'y']; 
+  // var mappedArr = map(testArr, f);
+  // testArr != filteredArr;
+
+  // Case 7: 
+  // var testArr = [10, 20, 30]; 
+  // var mappedArr = filter(testArr, f(element) {
+  //   return element * 10; 
+  // })
+  // Expected mappedArr = [100, 200, 300]; 
+
+  // Case 8: 
+  // var testArr = [10, 20, 30]; 
+  // var mappedArr = filter(testArr, f(element) {
+  //   return element * 10; 
+  // })
+  // Expected mappedArr = [100, 200, 300]; 
+
+  
+  function map(arr, callback, optionalThisObj) {
+    var mappedArr = [];
+    if (optionalThisObj) callback = callback.bind(optionalThisObj);
+    for(var i = 0; i < arr.length; i++) {
+      // this index is unassigned, ie element is missing
+      if (i in arr === false) continue;
+      else {
+        var mappedElement = callback(arr[i], i, arr);
+        mappedArr[i] = mappedElement;
+      }
+    }
+    return mappedArr;
+  }
+
+
+  var testObj = {
+    description: 'I should be accessible inside the callback'
+  };
+
+  tests({
+
+    'It should run the callback function array.length times': function () {
+      var numOfTimesCallbackHasRun = 0;
+      map([94, 21, 6], function () {
+        numOfTimesCallbackHasRun++;
+      });
+      eq(numOfTimesCallbackHasRun, 3);
+    },
+
+    'It should pass in each element of the array as the first argument in callback function': function () {
+      map(['z'], function (element) {
+        eq(element, 'z');
+      });
+    },
+
+    'It should pass in the currentIndex for each element': function () {
+      map(['a'], function (element, index) {
+        eq(index, 0);
+      });
+    },
+
+    'It should pass in the array that forEach is acting on': function () {
+      var passedInArray = ['a', 36, 'hello'];
+      map(passedInArray, function (element, index, arr) {
+        eq(arr, passedInArray);
+      });
+    },
+
+    'It should accept an optional this object': function () {
+      map(['item 1', 248], function () {
+        eq(this.description, 'I should be accessible inside the callback');
+      }, testObj);
+    },
+
+    'It should return a brand new array ': function() {
+      var originalArr = ['e', 14, 'hello'];
+      var mappedArr = map(originalArr, function() {});
+      eq(originalArr !== mappedArr, true);
+    },
+
+    'It should return a new array with elements mapped to the callback': function() {
+      var originalArr = [10, 20, 30];
+
+      var mappedArr = map(originalArr, function(element) {
+        return element * 10;
+      });
+
+      eq(mappedArr.length, 3); 
+      eq(mappedArr[0], 100);
+      eq(mappedArr[1], 200);
+      eq(mappedArr[2], 300);
+    } , 
+
+    'It should skip missing elements in the array': function() {
+      var weirdArr = [ , 1];
+      var mappedArr = map(weirdArr, function doubleMap(element) {
+        return element * 2;
+      });
+      
+      var indexZeroExists = 0 in mappedArr;
+      eq(indexZeroExists, false);
+      eq(mappedArr[1], 2);
+    } 
+
+  });
+</script>

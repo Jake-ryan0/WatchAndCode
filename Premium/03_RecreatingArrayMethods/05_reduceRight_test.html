@@ -1,0 +1,127 @@
+<script src="./simple_test_framework.js"></script>
+<script>
+
+
+  function getIndexOfLastElementInArr(arr) {
+    const arrOfKeys = Object.keys(arr);
+    if (arrOfKeys.length === 0) return null;
+    return arrOfKeys[arrOfKeys.length - 1];
+  }
+
+  function reduceRight(arr, callback, optionalInitialValue) {
+    let accumulator;
+    let startIndex = getIndexOfLastElementInArr(arr);
+    
+    // array has no elements
+    if (startIndex === null) {
+      if (optionalInitialValue === undefined) {
+        throw new TypeError('Array is empty and no initial value is provided')
+      } else {
+        return optionalInitialValue; 
+      }
+    }
+
+    // arr only has one element and initial value is not provided
+    if (Object.keys(arr).length === 1 && optionalInitialValue === undefined) return arr[startIndex]; 
+
+
+    if (optionalInitialValue === undefined) {
+      accumulator = arr[getIndexOfLastElementInArr(arr)];
+      startIndex = getIndexOfLastElementInArr(arr) - 1;
+    } else {
+      accumulator = optionalInitialValue;
+      startIndex = getIndexOfLastElementInArr(arr);
+    } 
+
+
+    for (let i = startIndex; i >= 0; i--) {
+      if (i in arr) accumulator = callback(accumulator, arr[i], i, arr);
+    }
+
+    return accumulator;
+  }
+
+  tests({
+    // initial value provided
+    'It should run the callback on each element (excluding holes) from back to front of arr': function () {
+      var a = [, , '1', '2', , , , '3', '4', , '5', ,];
+      let initialValue = 'Z';
+      var result = reduceRight(a, function (accumulator, currentValue) { return accumulator + currentValue; }, initialValue);
+      eq(result, 'Z54321');
+    },
+
+    'It should pass in the currentIndex as an optional 3rd argument in callback': function () {
+      let arr = [99.2]
+      reduceRight(arr, function (accumulator, currentValue, currentIndex) {
+        eq(currentIndex, 0);
+      })
+    },
+
+    'It should pass in array being reduced as optional 4th argument in callback': function () {
+      var arr = [4, 6, 'c', 81];
+      reduceRight(arr, function (accumulator, currentValue, currentIndex, arrPassedIntoCallback) {
+        eq(arrPassedIntoCallback, arr);
+      })
+    },
+
+    // intial value not provided
+    'It should use the last element in the array if initialValue is not provided': function() {
+      var a = [, , '1', '2', , , , '3', '4', , '5', ,];
+      var result = reduceRight(a, function (accumulator, currentValue) { return accumulator });
+      eq(result, 5);
+    }, 
+
+    'Callback should start from the second last element if initialValue is not provided': function() {
+      var a = [, , 'a', 'b', , , , 'c', 'd', , 'e', ,];
+      let numTimesCallBackHasRun = 0;
+      var result = reduceRight(a, function (accumulator, currentValue) { 
+        numTimesCallBackHasRun++;
+        return accumulator + currentValue 
+      });
+      eq(result, 'edcba');
+      eq(numTimesCallBackHasRun, 4);
+    },
+
+    'It should return typeError if empty array and no intial value is provided': function() {
+      let arr = [ , , , , ];
+      let isTypeError = false;
+
+      try { 
+        reduceRight(arr, function(accumulator, currentValue) {
+          accumulator + currentValue; 
+        }); 
+      } catch(e) {
+        isTypeError = e instanceof TypeError;
+      }
+      eq(isTypeError, true);
+    },
+    
+    'It should return initial value if it is provided and array is empty without calling callback': function() {
+      let arr = [ , , , ]; 
+      let numTimesCallBackHasRun = 0;
+      let result = reduceRight(arr, function(accumulator, currentValue) {
+        accumulator + currentValue; 
+        numTimesCallBackHasRun++;
+      }, 123)
+
+      eq(result, 123);
+      eq(numTimesCallBackHasRun, 0); 
+    }, 
+
+    
+    'It should return only element in array if array only has one element and initial value is not provided. Without calling callback': function() {
+      let arr = [ , , 123, ]; 
+      let numTimesCallBackHasRun = 0;
+      let result = reduceRight(arr, function(accumulator, currentValue) {
+        accumulator + currentValue; 
+        numTimesCallBackHasRun++;
+      })
+
+      eq(result, 123);
+      eq(numTimesCallBackHasRun, 0); 
+    }
+    
+
+  });
+
+</script>

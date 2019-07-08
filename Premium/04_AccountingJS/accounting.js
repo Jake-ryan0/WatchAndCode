@@ -324,7 +324,10 @@
 			useFormat = number > 0 ? formats.pos : number < 0 ? formats.neg : formats.zero;
 
 		// Return with currency symbol added:
-		return useFormat.replace('%s', opts.symbol).replace('%v', formatNumber(Math.abs(number), checkPrecision(opts.precision), opts.thousand, opts.decimal));
+		let formattedNumber = formatNumber(Math.abs(number), checkPrecision(opts.precision), opts.thousand, opts.decimal);
+		let formattedCurrency =  useFormat.replace('%s', opts.symbol)
+																			.replace('%v', formattedNumber);
+		return formattedCurrency; 
 	};
 
 

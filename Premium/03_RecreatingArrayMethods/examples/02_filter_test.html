@@ -1,0 +1,116 @@
+<script src="../tinytest.js"></script>
+<script>
+
+// Case 1:
+// filter(arr, f() {
+//   console.log('hi');
+// });
+
+// Case 2:
+// filter(['a', 'b'], f(element) {
+//   console.log(element);
+// })
+
+// Case 3:
+// filter(['x', 'y'], f(element, index) {
+//   console.log(index);
+// })
+
+// Case 4:
+// filter([4, 58], f(element, index, originalArr) {
+//   console.log(originalArr);
+// })
+
+// Case 5:
+// filter(arr, f() {
+//   console.log(this.property);
+// }, optionalThisObj)
+
+// Case 6:
+// var testArr = ['d', 'f', 'y']; 
+// var filteredArr = filter(testArr, f() {
+//   return true;
+// })
+// testArr != filteredArr;
+
+// Case 7: 
+// var testArr = [361, 46, 200]; 
+// var filteredArr = filter(testArr, f(element) {
+//   return element > 100; 
+// })
+// Expected filteredArr = [361, 200]; 
+
+function filter(arr, callback, optionalThisParameter) {
+  var filteredArr = [];
+  if (optionalThisParameter) callback = callback.bind(optionalThisParameter);
+  for (var i = 0; i < arr.length; i++) {
+    var currentElementPassesPredicate = callback(arr[i], i, arr);
+    if (currentElementPassesPredicate) filteredArr.push(arr[i]);
+  }
+  return filteredArr;
+}
+
+var optionalThisObj = {
+  description: 'I should be accessible from inside filter.'
+}
+
+tests({
+  'It should run the callback function array.length times': function () {
+    var numOfTimesCallbackHasRun = 0;
+      filter([94, 21, 6], function () {
+        numOfTimesCallbackHasRun++;
+      });
+      eq(numOfTimesCallbackHasRun, 3);
+  },
+
+  'It should pass in each element of the array as the first argument in callback function': function () {
+    filter(['z'], function (element) {
+        eq(element, 'z');
+      });
+  },
+
+  'It should pass in the currentIndex for each element': function () {
+    filter(['a'], function (element, index) {
+        eq(index, 0);
+      });
+  },
+
+  'It should pass in the array that forEach is acting on': function () {
+    var arrFilterArgument = ['e', 14, 'hello'];
+    filter(arrFilterArgument, function(element, index, arr) {
+      eq(arrFilterArgument, arr);
+    });
+  },
+
+  'It should accept an optional this object': function () {
+    var arrFilterArgument = ['x', 12, 'goodbye'];
+    filter(arrFilterArgument, function() {
+      eq(this.description, 'I should be accessible from inside filter.')
+    }, optionalThisObj);
+  },
+  
+  'It should return an array': function() {
+    var arrFilterArgument = ['e', 14, 'hello'];
+    var returnedFilteredArray = filter(arrFilterArgument, function() {});
+  eq(Array.isArray(returnedFilteredArray), true);
+  },
+
+  'It should return a new array ': function() {
+    var arrBeingFiltered = ['e', 14, 'hello'];
+    var returnedFilteredArray = filter(arrBeingFiltered, function() {});
+    eq(arrBeingFiltered !== returnedFilteredArray, true);
+  },
+
+  'It should return a new array containing items where callback returns true': function() {
+    var arrBeingFiltered = [33, 147, 28];
+
+    var returnedFilteredArray = filter(arrBeingFiltered, function(element) {
+      return element > 100;
+    });
+
+    eq(returnedFilteredArray.length, 1); 
+    eq(returnedFilteredArray[0], 147);
+  }   
+
+});
+</script>

@@ -237,7 +237,7 @@
 		// exponential notation moves the decimal place over instead of directly multiplying.
 		let exponentionalForm = Number(value + 'e' + precision); // 1.0033352342 * 10^2 (if 1.3415 * 10^2 no problem)
 		let rounded = Math.round(exponentionalForm); // 100.3353342 => 100 (134.15 => 134) ie remove all the decimals that are not needed
-		let result = Number(rounded + 'e-' + precision); // 100 => 1.00 instead of 100 / 100 which will give 1 (134 / 100 = 1.34)
+		let result = Number(rounded + 'e-' + precision); // 100 => 1.00 instead of 100 / 100 which will give 1. (134 / 100 = 1.34)
 		// calls Number.toFixed
 		return result.toFixed(precision); // 1.toFixed(2) => 1.00
 	}

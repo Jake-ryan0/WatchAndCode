@@ -1,0 +1,116 @@
+<script src="./simple_test_framework.js"></script>
+<script>
+
+  /* Basic implementation based directly off MDN docs
+   * Does not consider edges cases like deleted / unassigned elements
+   * Used eqStrict because I realized types were not being checked correctly
+   * 
+   * Inspiration taken from Chujun's submission: 
+   *  1. Used forEach with its (element, index) to check with expected array. 
+   *  2. eqStrict(result[1][0], 3), using nested arrays to get to the value
+   *     
+   *     Previously I set the expected result as the native concat method 
+   *     ie. eqStrict(result, expectedUsingNativeConcat)
+   *     in order to compare object references
+   *     
+   *     I should have just used nested arrays to directly 
+   *     get the value instead of comparing object references.
+   * 
+  */
+  function concat(arr, argumentToAppend) {
+    const result = [];
+    const numItemsToAppend = arguments.length - 1;
+
+
+    arr.forEach(e => result.push(e));
+
+    for (let i = 1; i <= numItemsToAppend; i++) {
+      currentArgument = arguments[i];
+      if (Array.isArray(currentArgument)) {
+        currentArgument.forEach(ele => result.push(ele));
+      } else {
+        result.push(currentArgument);
+      }
+    }
+
+    return result;
+  }
+
+  tests({
+    'It should merge initial array with argumentToAppend (value)': function () {
+      const arr = [10, 2, null, 3];
+      const result = concat(arr, 4);
+      const expected = [10, 2, null, 3, 4];
+      result.forEach((element, i) => eqStrict(element, expected[i]));
+    },
+
+    'It should merge initial array with argumentToAppend (array)': function () {
+      const arr = [10, 2, null, 3];
+      const result = concat(arr, [4, 5, 6]);
+      const expected = [10, 2, null, 3, 4, 5, 6];
+      result.forEach((element, i) => eqStrict(element, expected[i]));
+    },
+
+
+    'It should merge intial arrray with multiple arguments (either array or value) provided': function () {
+      const arr = [10, 2, null, 3];
+      const result = concat(arr, [4, 5, 6], 7, ['bye']);
+      const expected = [10, 2, null, 3, 4, 5, 6, 7, 'bye'];
+      result.forEach((element, i) => eqStrict(element, expected[i]));
+    },
+
+
+    'It should return a shallow copy if argumentToAppendIsNotProvided': function () {
+      const arr = [10];
+      const result = concat(arr);
+      eqStrict(result[0], 10);
+      eqStrict(result !== arr, true);
+    },
+
+    'It should copy primitives by value': function () {
+      const a1 = [10, '2', 3];
+      const a2 = [4, 5, 6, true];
+      const a3 = [7, 8, '9', null, undefined];
+
+      const result = concat(a1, a2, a3);
+
+      // using strict eqStrict to maintain type. 
+      const expected = [10, '2', 3, 4, 5, 6, true, 7, 8, '9', null, undefined];
+      result.forEach((element, i) => {
+      eqStrict(element, expected[i]);
+      });
+    },
+
+    'It should copy objects by references': function () {
+      const num1 = [[10]];
+      const obj = {name: 'jx'};
+
+      const result = concat(num1, obj);
+      
+      eqStrict(result[1], obj);
+      eqStrict(result[1].name, 'jx');
+      
+
+      obj.name = 'Jun Xian';
+     
+      eqStrict(result[1].name, 'Jun Xian');
+    },
+
+    'It should not recurse into nested array arguments': function() {
+      const num1 = [[10]];
+      const num2 = [[[2, [3]]]];
+      const result = concat(num1, num2);
+
+      eqStrict(Array.isArray(result[0]), true);
+      eqStrict(result[0], num1[0]);
+
+      eqStrict(Array.isArray(result[1]), true);
+      eqStrict(result[1], num2[0]);
+
+      eqStrict(result[2], undefined);
+    }
+
+  })
+
+
+</script>

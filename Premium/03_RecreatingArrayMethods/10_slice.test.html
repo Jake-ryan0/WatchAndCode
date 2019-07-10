@@ -1,0 +1,147 @@
+<script src="./simple_test_framework.js"></script>
+<script>
+
+
+  function slice(arr, optionalStart, optionalEnd) {
+    let i; 
+    let end; 
+    let calculatedEnd;
+    const copy = [];
+
+    if (optionalStart === undefined) i = 0;
+    else { 
+      if (optionalStart >= arr.length) return [];
+      else if(optionalStart < 0) i = arr.length +  optionalStart;
+      else i = optionalStart; 
+    }
+
+    if (optionalEnd === undefined) end = arr.length;
+    else {
+      if (optionalEnd >= arr.length) end = arr.length;  // upper bound
+      else if (optionalEnd >= 0 && optionalEnd < arr.length) end = optionalEnd;  // endIndex in the array
+      else {
+        calculatedEnd = arr.length + optionalEnd;
+        end = calculatedEnd; 
+      }
+
+    }
+
+    for( ; i < end; i++) {
+      copy.push(arr[i]);
+    }
+
+    return copy;
+  }
+
+  tests({
+    "(1) It should start extracting from 0 if startIndex is undefined": function () {
+      const arr = ['start extracting'];
+      const res = slice(arr);
+      eqStrict(res[0], 'start extracting');
+    },
+
+    "(2) It should start extracting from startIndex if positive": function () {
+      const arr = [123, 4, 'start extracting'];
+      const res = slice(arr, 2);
+      eqStrict(res[0], 'start extracting');
+    },
+
+    "(3) It should extract the LAST x elements where x = |startIndex| if startIndex is negative": function () {
+      const arr = [123, 4, 'item'];
+      const res = slice(arr, -2);
+      eqStrict(res[0], 4);
+      eqStrict(res[1], 'item');
+    },
+
+    "(4) It should return an empty array if startIndex >= arr.length ": function () {
+      const arr = [123, 4, 'nothing is copied'];
+      const res = slice(arr, 3); // startIndex === arr.length
+      eqStrict(res[0], undefined);
+    },
+
+    "(5) It should extract up to but not including endIndex": function () {
+      const arr = [123, 4, 'this is not copied'];
+      const res1 = slice(arr, 0, 2); // endIndex 1 less than arr.length
+      eqStrict(res1.length, 2);
+      
+      const res2 = slice(arr, 0, 2); // endIndex is 0, should return empty array
+      eqStrict(res2.length[0], undefined);
+
+    },
+
+    "(6) It should extract till the end of the array if endIndex >= arr.length": function () {
+      const arr = [123, 4, 'this is copied'];
+      const res1 = slice(arr, 0, 20); // endIndex way larger arr.length
+      eqStrict(res1.length, 3); 
+
+      const res2 = slice(arr, 0, 3); // endIndex exactly length of array
+      eqStrict(res2.length, 3);
+    },
+
+    "(7) It should extract till x (not including x), where x = arr.length + negativeEndIndex": function () {
+      const arr = [123, 'nope', 'this is not copied'];
+      const res1 = slice(arr, 0, -2); // copy until index 3 -2, but not including 1. 
+      eqStrict(res1.length, 1); 
+
+      const res2 = slice(arr, 0, -10); // x is negative
+      eqStrict(res2.length, 0);
+    },
+
+    "(8) It should copy objects by references": function () {
+      const arr = [{name: 'jx'}];
+
+      const result = slice(arr);
+      
+      eqStrict(result === arr, false);
+      eqStrict(result[0], arr[0]); 
+      eqStrict(result[0].name, 'jx');
+      
+      arr[0].name = 'Jun Xian';
+     
+      eqStrict(result[0].name, 'Jun Xian');
+      eqStrict(arr[0].name, result[0].name);
+    },
+
+
+    
+    "(9) Changes to primitive values on one array should not affect the other": function () {
+      const arr = ['jx', 'this will be changed'];
+
+      const result = slice(arr);
+      
+      eqStrict(result === arr, false);
+      eqStrict(result[0], arr[0]); 
+      eqStrict(result[1], arr[1]); 
+      
+      result[1] = 'updated';
+     
+      eqStrict(result[1], 'updated');
+      eqStrict(arr[1], 'this will be changed');
+    },
+    
+    "(9) Changes to primitive values on one array should not affect the other": function () {
+      const arr = ['jx', 123];
+
+      const result = slice(arr);
+      
+      eqStrict(result === arr, false);
+      eqStrict(result[0], arr[0]); 
+      eqStrict(result[1], arr[1]); 
+      
+      result.push({name: 'I have been added to result'})
+     
+      eqStrict(result[2].name, 'I have been added to result');
+      eqStrict(arr[2], undefined);
+    },
+
+
+
+  
+
+
+
+
+    
+
+  })
+</script>

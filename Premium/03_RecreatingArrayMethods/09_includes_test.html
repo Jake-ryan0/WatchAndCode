@@ -1,0 +1,96 @@
+<script src="./simple_test_framework.js"></script>
+<script>
+  /* Discrepancy found where MDN docs suggests that entire array is only searched if
+   *  computedIndex <=  -1 * arr.length
+   * Testing in the console indicates for computedIndex < 0, entire array will be searched
+   * Implemented function follows behaviour of the native method.
+  */
+
+  function includes(arr, searchValue, optionalFromIndex) {
+    let i;
+    let calculatedIndex;
+
+    if (arguments.length === 2) i = 0;
+    else {
+      if (optionalFromIndex >= 0) i = optionalFromIndex;
+      else {
+        calculatedIndex = arr.length + optionalFromIndex;
+        if (calculatedIndex >= 0) i = calculatedIndex;
+        else i = 0; // calculatedIndex < 0, search entire array
+      }
+    }
+
+    for (; i < arr.length; i++) {
+      if (arr[i] === searchValue) return true;
+    }
+    return false;
+  }
+
+
+  tests({
+    "(1) It should return true if a given value exists in the array": function () {
+      const arr = ['a', 'b', 'c'];
+      const res = includes(arr, 'c');
+      eqStrict(res, true);
+    },
+
+    // case sensitive
+    "(2) It should return false if a given value does not exist in the array": function () {
+      const arr = ['a', 'b', 'c'];
+      const res = includes(arr, 'C');
+      eqStrict(res, false);
+    },
+
+    // fromIndex is positive
+    "(3) It should take in an optionaFromIndex, if positive, search starts from given index": function () {
+      const arr = ['a', 'b', 'c'];
+
+      const res1 = includes(arr, 'b', 1);
+      eqStrict(res1, true);
+
+      const res2 = includes(arr, 'b', 2);
+      eqStrict(res2, false);
+
+    },
+
+    // computedIndex = arr.length + negativeFromIndex
+    "(4) It should start from computedIndex if fromIndex is negative": function () {
+      const arr = ['ant', 'cat', 'camel', 'duck', 'bison'];
+      const result1 = includes(arr, 'camel', -2); // starts from index 3, 'duck'
+      eqStrict(result1, false);
+      const result2 = includes(arr, 'duck', -2); // starts from index 3, 'duck'
+      eqStrict(result2, true);
+    },
+
+    // eg fromIndex = -1000 
+    "(5) It should search the whole array if computedIndex < 0": function () {
+      const arr = ['ant', 'cat', 'camel', 'duck', 'bison'];
+      const result = includes(arr, 'ant', -200); // 5 - 200 is out of bounds, hence search the whole array
+      eqStrict(result, true);
+    },
+
+    "(6) It should treat 0, +0 and -0 as equivalent": function() {
+      const arr = ['ant', 'cat', +0, 'duck', 'bison'];
+      const result1 = includes(arr, 0);
+      eqStrict(result1, true);
+      const result2 = includes(arr, 0);
+      eqStrict(result2, true);
+    }
+
+
+
+
+    /* 
+
+    MDN docs does not consider this case, but the native implementation searches the whole array
+    Whenever computed index < 0, native method seems to search the whole array. 
+
+    "(7) It should return -1 if  ( -1 * arr.length < computedIndex < 0 )": function () {
+      fail();
+    },
+
+    */
+
+  })
+
+</script>

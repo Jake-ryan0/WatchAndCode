@@ -1,0 +1,65 @@
+<script src="./simple_test_framework.js"></script>
+<script>
+
+  function pop(arr) {
+    if (arr.length === 0) return undefined; 
+
+    lastIndex = arr.length - 1;
+    let deletedItem = arr[lastIndex];
+    delete arr[lastIndex]; 
+    arr.length--; 
+    return deletedItem; 
+  }
+
+tests({
+    '(1) It should remove the last element of the array and return that element': function () {
+      const arr = [1, 2, 3];
+      const res1 = pop(arr);
+      eqStrict(res1, 3);
+    },
+
+    '(2) It should accept an array like object': function () {
+      var obj = {
+        length: 2,
+        0: 'item 1',
+        1: 'item will be popped'
+      };
+
+      const res1 = pop(obj);
+      eqStrict(res1, 'item will be popped');    
+    },
+
+    '(3) It should decrement the length property for an array': function () {
+      const arr = [1, 2, 3];
+      const res1 = pop(arr);
+      eqStrict(arr.length, 2);
+    },
+
+    '(4) It should decrement the length property for an array like object': function () {
+      var obj = {
+        length: 2,
+        0: 'item 1',
+        1: 'item will be popped'
+      };
+
+      const res1 = pop(obj);
+      eqStrict(res1, 'item will be popped'); 
+      eqStrict(obj.length, 1);
+    },
+
+    '(5) It should decrement the length property for an array': function () {
+      const arr = [99, 'hello', 'bye'];
+      const res1 = pop(arr);
+      eqStrict(res1, 'bye');
+      eqStrict(arr.length, 2);
+    },
+
+    '(6) It should return undefined for an empty array': function () {
+      const arr = [];
+      const res1 = pop(arr);
+      eqStrict(res1, undefined);
+    }
+
+})
+
+</script>

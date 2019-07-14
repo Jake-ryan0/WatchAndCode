@@ -1,0 +1,96 @@
+<script src="./simple_test_framework.js"></script>
+<script>
+
+  function shift(arr) {
+    // length doesnt exist or length cannot be converted to int
+    if (!arr.length || isNaN(parseInt(arr.length)) ) return undefined; 
+
+
+    let j = 0
+    const removedEle = arr[0]; 
+
+    for(let i = 1; i < arr.length; i++) {
+      arr[j] = arr[i]; 
+      j++; 
+    }
+
+    arr.length--;
+    return removedEle; 
+  }
+
+  tests({
+    '(1) It should remove the first element of the array and return that element': function () {
+      const arr = [1, 2, 3];
+      const res1 = shift(arr);
+      eqStrict(res1, 1);
+      eqStrict(arr[0], 2);
+    }, 
+    
+    '(2) It should decrement the length property for an array': function () {
+      const arr = [1, 2, 3];
+      const res1 = shift(arr);
+      eqStrict(arr.length, 2);
+    },
+
+    '(3) It should shift all the elements one index down for an array': function () {
+      const arr = ['item 1 is removed' ,'new item 1', 55, 100, null, , , , 'final item shld be at index 7'];
+      const res1 = shift(arr);
+      const expected = ['new item 1', 55, 100, null, , , , 'final item shld be at index 7'];
+      eqStrict(arr.length, 8);
+      eqStrict(res1, 'item 1 is removed');
+      let j = 0;
+      arr.forEach( (ele, i) => {
+        eqStrict(ele, expected[i]);
+        eqStrict(i, j);
+        j++;
+      });
+    },
+
+    '(4) It should remove the first element for an array like object and return that element': function () {
+      var obj = {
+        length: 2,
+        0: 'item 1 will be removed',
+        1: 'new item 1'
+      };
+
+      const res1 = shift(obj);
+      eqStrict(res1, 'item 1 will be removed');    
+      eqStrict(obj[0], 'new item 1'); 
+    },
+
+    '(5) It should decrement the length property for an array like object': function () {
+      var obj = {
+        length: 2,
+        0: 'item 1 will be removed',
+        1: 'new item 1'
+      };
+
+      const res1 = shift(obj);
+      eqStrict(obj.length, 1);
+    },
+
+    '(6) It should shift all the elements one index down for an array': function () {
+      var obj = {
+        length: 3,
+        0: 'item 1 will be removed',
+        1: 'new item 1',
+        2: 4021
+      };
+
+
+      const res1 = shift(obj);
+      eqStrict(obj.length, 2);
+      eqStrict(res1, 'item 1 will be removed');
+
+      eqStrict(obj[0], 'new item 1');
+      eqStrict(obj[1], 4021);      
+    },
+
+    '(7) It should return undefined for an empty array': function () {
+      const arr = [];
+      const res1 = shift(arr);
+      eqStrict(res1, undefined);
+    }
+  })
+     
+</script>

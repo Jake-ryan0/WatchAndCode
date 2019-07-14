@@ -1,0 +1,102 @@
+<script src="./simple_test_framework.js"></script>
+<script>
+  /* Used isNaN(x) instead of x === NaN in line 13
+   * because NaN === NaN returns false. 
+  */
+
+  function push(arr, elementToAppend) {
+    let currentIndexToAppend;
+
+    if (Array.isArray(arr)) currentIndexToAppend = arr.length;
+    else { 
+      if (arr.hasOwnProperty('length')) {
+        if (isNaN(parseInt(arr.length))) {
+          currentIndexToAppend = 0;
+          arr.length = 0;
+        }
+        else currentIndexToAppend = parseInt(arr.length);
+      } else { // does not have length property
+        arr.length = 0; 
+        currentIndexToAppend = arr.length; 
+      }
+      
+    }
+
+    for (let i = 1; i < arguments.length; i++) {
+      arr[currentIndexToAppend] = arguments[i];
+      currentIndexToAppend++;
+      arr.length = currentIndexToAppend;
+    }
+
+    return arr.length;
+  }
+
+  tests({
+    '(1) It should append one or more element to the end of the array and return the length property': function () {
+      const arr = [1, 2, 3];
+      const res1 = push(arr, 'first push');
+      eqStrict(res1, 4);
+
+      const res2 = push(arr, 'more items', undefined, 'should return 7');
+      eqStrict(res2, 7);
+    },
+
+    '(2) It should accept an array like object': function () {
+      var obj = {
+        length: 0
+      };
+
+      const res1 = push(obj, {name: 'first item'});
+      eqStrict(res1, 1);
+
+      const res2 = push(obj, {name: 'second'});
+      eqStrict(res2, 2);
+
+      eqStrict(obj[1].name, 'second');
+    
+    },
+
+    '(3) It should use the length property to determine where to start apppending': function () {
+      var obj = {
+        length: 3
+      };
+
+
+      const res1 = push(obj, {name: 'first item but at index 3'});
+      eqStrict(res1, 4);
+
+      eqStrict(obj[0], undefined);
+      eqStrict(obj[1], undefined);
+      eqStrict(obj[2], undefined);
+      eqStrict(obj[3].name, 'first item but at index 3');
+    },
+
+    '(4) It should create a length property if it is non-existent': function () {
+      var obj = {
+        description: 'this is an array like object'
+      };
+
+      eqStrict(obj.hasOwnProperty('length'), false)
+      const res1 = push(obj, {name: 'first item'});
+      eqStrict(obj.hasOwnProperty('length'), true);
+      eqStrict(res1, 1);
+
+    },
+
+    '(5) It should use 0 if length cannot be converted to an integer': function () {
+      var obj = {
+        length: 'a'
+      };
+
+      eqStrict(obj.hasOwnProperty('length'), true);
+      const res1 = push(obj, {name: 'first item'});
+      eqStrict(obj.length, 1);
+      eqStrict(res1, 1);
+    },
+
+
+
+
+
+  })
+</script>

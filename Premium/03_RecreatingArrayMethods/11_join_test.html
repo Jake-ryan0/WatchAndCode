@@ -1,0 +1,79 @@
+<script src="./simple_test_framework.js"></script>
+<script>
+  
+  function join(arr, optionalSeparator) {
+    let str = '';
+    let isFirstElement = true;
+    let separator;
+    let end;
+
+    if (arguments.length === 1) separator = ',';
+    else {
+      if (typeof optionalSeparator === 'string') separator = optionalSeparator;
+      else if (optionalSeparator === null) separator = ','
+      else separator = optionalSeparator.toString();
+    }
+
+    // setting end point of for loop
+    if (!Array.isArray(arr)) {
+      let keysArr = Object.keys(arr)
+      let lastKeyInKeysArr = keysArr.length - 1;
+      let lastIndexValue = keysArr[lastKeyInKeysArr];
+      end = lastIndexValue; 
+    } else end = arr.length - 1;
+
+    for (let i = 0; i <= end; i++) {
+      if (arr[i] === null || arr[i] === undefined) arr[i] = '';
+
+      if (isFirstElement) {
+        str = arr[i].toString();
+        isFirstElement = false;
+      } else {
+        str = str + separator + arr[i].toString();
+      }
+    }
+    return str;
+  }
+
+  tests({
+    "(1) It should concatenate all elements with commas": function () {
+      const arr = ['Wind', 'Water', 'Fire'];
+      const str = join(arr);
+      eqStrict(str, 'Wind,Water,Fire');
+    },
+
+    "(2) It should accept an optionalSeparator that replaces the commas": function () {
+      const arr = ['Wind', 'Water', 'Fire'];
+      const str = join(arr, '+  2');
+      eqStrict(str, 'Wind+  2Water+  2Fire');
+    },
+
+    "(3) It should convert optionalSeparator to string if necessary": function () {
+      const arr = ['Wind', 'Water', 'Fire'];
+      const str = join(arr, 3);
+      eqStrict(str, 'Wind3Water3Fire');
+    },
+
+    "(4) It should join all elements without characters between them if optionalSeparator is an empty string": function () {
+      const arr = ['Wind', 'Water', 'Fire'];
+      const str = join(arr, '');
+      eqStrict(str, 'WindWaterFire');
+    },
+
+    "(5) It should let null or undefined elements be an empty string": function () {
+      const arr = [1, , 2, null, 3, undefined, {name: 'random object'}];
+      const str = join(arr);
+      eqStrict(str, '1,,2,,3,,[object Object]');
+    },
+
+    "(6) It should work on an array like object": function () {
+      const arrLikeObj = {};
+      arrLikeObj[0] = 'first';
+      arrLikeObj[2] = 'second'
+      const str = join(arrLikeObj);
+      eqStrict(str, 'first,,second');
+    },
+
+    
+  })
+</script>

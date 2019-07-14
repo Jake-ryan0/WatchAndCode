@@ -1,0 +1,94 @@
+<script src="./simple_test_framework.js"></script>
+<script>
+
+  /*  if ( !arr.length && isNaN(parseInt(arr.length)) ) return undefined; 
+   *  Above line checks returns undefined if arr.length = null, undefined, false, or is an object, character etc
+   *  However, because of the && check istead of the || check, arr.length === 0 will NOT return undefined.
+   * 
+  */
+
+  function unshift(arr, element) {
+    if (!arr.length && isNaN(parseInt(arr.length))) return undefined; 
+
+    let j = arr.length - 1;
+    const numElementsToAdd = arguments.length - 1; 
+    let k = arr.length + numElementsToAdd - 1; 
+    let startIndexOfNewAdditons = numElementsToAdd - 1;
+    let currentIndexOfArgumentsListStartingFromBack = arguments.length - 1; 
+
+
+    // copying from last element in the array to the very last index in the new array (back to front)
+    // j tracks the index of the old array from last element down to 0
+    // k tracks the index of the new array from back to start.
+    for ( k ; j >= 0 ; k--) {
+      arr[k] = arr[j];
+      j--; 
+    }
+
+  
+    // pushing the last element in the arguments list to start index 
+    // eg arguments is (arr, 1, 2, 3) ==> [1, 2, 3, 'prev items' ...];
+    for (let i = startIndexOfNewAdditons; i >= 0; i--) {
+      arr[i] = arguments[currentIndexOfArgumentsListStartingFromBack];
+      currentIndexOfArgumentsListStartingFromBack--; 
+    }
+
+    if (!Array.isArray(arr)) {
+      arr.length += numElementsToAdd;
+    } 
+
+    return arr.length;
+    
+  }
+
+  tests({
+    '(1) It should add one element to the front of the array and return the length of the array': function () {
+      const arr = [1, 2, 3];
+      const res1 = unshift(arr, -573);
+      eqStrict(res1, 4);
+      
+      const expected = [-573, 1, 2, 3];
+      arr.forEach( (e, i) => eqStrict(e, expected[i])); 
+    }, 
+
+    '(2) It should add more than one element to the front and return the length of the array ': function () {
+      const arr = [1, 2, 3];
+      const res1 = unshift(arr, -22, -78, -996);
+      eqStrict(res1, 6);
+      
+      const expected = [-22, -78, -996, 1, 2, 3];
+      arr.forEach( (e, i) => eqStrict(e, expected[i])); 
+    }, 
+
+    '(3) It should add one element to obj[0] for an array like object and return the obj.length': function () {
+      var obj = {
+        length: 2,
+        0: 'xyz',
+        1: 'bye'
+      };
+
+      const length = unshift(obj, 'hello');
+      eqStrict(length, 3);    
+      
+      const listOfExpectedValues = ['hello', 'xyz', 'bye'];
+      Array.prototype.forEach.call(obj, (ele, i) => eqStrict(ele, listOfExpectedValues[i]));
+    },
+
+    '(4) It should add more than one element starting from obj[0] for an array like object and return the obj.length': function () {
+      var obj = {
+        length: 2,
+        0: 'xyz',
+        1: 'bye'
+      };
+      
+      const length = unshift(obj, 'hello', 1111);
+      eqStrict(length, 4);    
+      
+      const listOfExpectedValues = ['hello', 1111, 'xyz', 'bye'];
+      Array.prototype.forEach.call(obj, (ele, i) => eqStrict(ele, listOfExpectedValues[i]));
+    },
+   
+  })
+  
+
+</script>

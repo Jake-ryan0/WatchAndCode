@@ -1,0 +1,107 @@
+<script src="./simple_test_framework.js"></script>
+<script>
+  /* Very tedious and almost impossible to calculate how many times compare function is called 
+   * ie need to count num comparisons, there is no easy way to do so. 
+   * Hence, check for numTimesCompareFunctionIsCalled was not implemented in test (4)
+   
+   * In retrospect, seleciton sort may not have been the best choice. 
+   * Luckily merge/quick sort was not the implementation of choice for this test LOL
+   * The amount of logic inside the recursion would have been crazy.
+
+   * used String() instead of toString() to account for null 
+   
+   * compareFunction(a, b) must always return the same value
+   * when given a specific pair of elements a and b as its two arguments. 
+   * If inconsistent results are returned, then the sort order is undefined. 
+   * Did not implement this section of the docs because I was unable to determine what
+   * 'undefined sort order' means
+  */
+
+  function sort(arr, optionalCompareFunction) {
+    for (let i = arr.length - 1; i >= 1; i--) {
+      let largestItemIndex = i;
+
+      // getting the index of the largest item in the current range
+      for (let j = 0; j < i; j++) {
+
+        if (arr[j] === undefined) {
+          largestItemIndex = j;
+          break;
+        }
+
+        // compareFunction is provided
+        if (typeof optionalCompareFunction === 'function') {
+          let diff = optionalCompareFunction(arr[j], arr[largestItemIndex]);
+          if (diff <= 0) continue;
+          else largestItemIndex = j;
+        } else {
+          if (String(arr[j]) > String(arr[largestItemIndex])) largestItemIndex = j;
+        }
+      }
+
+    let temp = arr[i]; // item in last index 
+    arr[i] = arr[largestItemIndex] // make the last item the largest
+    arr[largestItemIndex] = temp;
+
+  }
+
+  return arr;
+  }
+
+  tests({
+    '(1) It should convert elements into strings and sort them by their UTF-16 units values': function () {
+      const arr = [1, 30, 4, 21, 100000];
+      const expected = [1, 100000, 21, 30, 4];
+      const result = sort(arr);
+      result.forEach((ele, i) => eqStrict(ele, expected[i]));
+    },
+
+    '(2) It should take in a compare function': function () {
+      const arr = [1, 30, 4, 21, 100000];
+      const expected = [1, 4, 21, 30, 100000];
+      const result = sort(arr, (a, b) => a - b);
+      result.forEach((ele, i) => eqStrict(ele, expected[i]));
+    },
+
+    '(3) It should allow for sorting of objects, where the compare function uses the value of a specified property': function () {
+      const wordsArr = [
+        { word: 'Edward' },
+        { word: 'Sharpe' },
+        { word: 'And' },
+        { word: 'The' },
+        { word: 'Magnetic' },
+        { word: 'Zeros' }
+      ];
+
+      const expected = [
+        { word: 'And' }, { word: 'Edward' }, { word: 'Magnetic' },
+        { word: 'Sharpe' }, { word: 'The' }, { word: 'Zeros' }
+      ];
+
+      const result = sort(wordsArr, (a, b) => {
+        var nameA = a.word.toUpperCase(); // ignore upper and lowercase
+        var nameB = b.word.toUpperCase(); // ignore upper and lowercase
+        if (nameA < nameB) {
+          return -1;
+        }
+        if (nameA > nameB) {
+          return 1;
+        }
+        return 0;
+      });
+
+      result.forEach((ele, i) => eqStrict(ele.word, expected[i].word));
+    },
+
+    '(4) It should sort all undefined elements to the end of the array, with no call to compare function': function () {
+      const arr = ['7', , undefined, 33, 100, null, , , false];
+      const expected = [100, 33, "7", false, null, undefined, , , ,];
+      let numTimesCompareFunctionWasCalled = 0;
+      const result = sort(arr);
+      result.forEach((ele, i) => eqStrict(ele, expected[i]));
+    },
+
+
+
+  });
+</script>

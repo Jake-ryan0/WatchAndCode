@@ -1,0 +1,133 @@
+<script src="./simple_test_framework.js"></script>
+<script>
+
+  /* Should have used existing array methods to copy the segment (slice)
+   *
+  */ 
+
+  function copyWithin(arr, target, optionalStart, optionalEnd) {
+    let start, end, t, arrSegment = [];
+
+    target >= 0 ? t = target : t = arr.length + target;
+
+    if (isNaN(optionalStart)) {
+      start = 0;
+    } else {
+      if (optionalStart < 0) start = arr.length + optionalStart;
+      else start = optionalStart;
+    }
+
+    if (isNaN(optionalEnd)) {
+      end = arr.length;
+    } else {
+      if (optionalEnd < 0) end = arr.length + optionalEnd;
+      else end = optionalEnd;
+    }
+
+    // segment to copy, could have used arrSegment = arr.slice(start, end);
+    let j = start;
+    let i = 0;
+
+    // copying into arrSegment
+    // start < end means not inclusive of end
+    while (j < end && j < arr.length  && j >= 0 && end <= arr.length) {
+      arrSegment[i] = arr[j];
+      i++;
+      j++;
+    }
+
+   
+
+    // making sure target is within arr range
+    let k = 0;
+    for (t; t < arr.length && t >= 0; t++) {
+      if (k >= arrSegment.length) break; // break out of loop when the arrSegment finishes
+      arr[t] = arrSegment[k];
+      k++
+    }
+    return arr;
+  }
+
+  tests({
+    '(1) It should accept a target index and copy until arr.length': function () {
+      const arr = ['a', 'b', 'c', 'd', 'g'];
+      const expected = ['a', 'b', 'a', 'b', 'c'];
+      copyWithin(arr, 2);
+
+      arr.forEach((ele, i) => eqStrict(ele, expected[i]));
+
+    },
+
+    '(2) It should copy to i onwards, where i = arr.length + target if target is negative': function () {
+      const arr = ['a', 'b', 'c', 'd'];
+      const expected = ['a', 'a', 'b', 'c'];
+      copyWithin(arr, -3);
+
+      arr.forEach((ele, i) => eqStrict(ele, expected[i]));
+    },
+
+    '(3) It should return the original array if target >= arr.length': function () {
+      const arr = ['a', 'b', 'c', 'd'];
+      const expected = ['a', 'b', 'c', 'd']; // unchanged
+      copyWithin(arr, 20);
+      arr.forEach((ele, i) => eqStrict(ele, expected[i]));
+      
+      copyWithin(arr, -15); 
+      arr.forEach((ele, i) => eqStrict(ele, expected[i]));
+    },
+
+    '(4) It should take in an optionalStartIndex': function () {
+      const arr = ['a', 'b', 'c', 'd', 'g'];
+      const expected = ['a', 'b', 'b', 'c', 'd'];
+      copyWithin(arr, 2, 1);
+
+      arr.forEach((ele, i) => eqStrict(ele, expected[i]));
+    },
+
+    '(5) It should copy from s onwards, where s = arr.length + startIndex if startIndex is negative': function () {
+      const arr = ['a', 'b', 'c', 'd', 'e'];
+      
+      // s is index 4, therefore only 'e' will be copied 
+      // once 'c' has been replaced by 'e', loop ends
+      const expected = ['a', 'b', 'e', 'd', 'e'];
+
+      copyWithin(arr, 2, -1); 
+      arr.forEach((ele, i) => eqStrict(ele, expected[i]));
+    },
+
+    '(6) It should take in an optionalEndIndex': function () {
+      const arr = ['a', 'b', 'c', 'd', 'e'];
+      const expected = ['a', 'b', 'b', 'c', 'e'];
+
+      copyWithin(arr, 2, 1, 3); 
+      arr.forEach((ele, i) => eqStrict(ele, expected[i]));
+    },
+
+    '(7) It should copy until e (not inclusive), where e = arr.length + endIndex if endIndex is negative': function () {
+      const arr = ['a', 'b', 'c', 'd', 'e'];
+      const expected = ['a', 'b', 'b', 'd', 'e'];
+
+      copyWithin(arr, 2, 1, -3); // arrSegment is ['b', 'c'], index 1-2 (not inclusive) 
+      arr.forEach((ele, i) => eqStrict(ele, expected[i]));
+    },
+
+    '(8) It should work on an array-like object': function () {
+      var obj = {
+        length: 3,
+        0: 5,
+        1: 100,
+        2: 4077
+      };
+      
+      copyWithin(obj, 1);
+      eqStrict(obj[0], 5);
+      eqStrict(obj[1], 5);
+      eqStrict(obj[2], 100);
+      
+
+      
+    },
+
+  })
+
+</script>

@@ -1,0 +1,62 @@
+<script src="./simple_test_framework.js"></script>
+<script>
+
+function reverse(arr) {
+
+  if (!Array.isArray(arr) && isNaN(parseInt(arr.length))) return undefined; 
+
+  for (let i = 0; i < arr.length / 2; i++) {
+    let backIndex = arr.length - 1 - i;
+    let temp = arr[i];
+    arr[i] = arr[backIndex];
+    arr[backIndex] = temp; 
+  }
+  return arr;
+}
+
+
+tests({
+  '(1) It should reverse an array in-place': function() {
+    const arr = [1, 2, 3, 4]; 
+    const expected = [4, 3, 2, 1];
+    const res = reverse(arr);
+  
+    const arr2 = [1, 2, 3, 4, 5]; 
+    const expected2 = [5, 4, 3, 2, 1];
+    const res2 = reverse(arr2);
+  
+    res.forEach((ele, i) => eqStrict(ele, expected[i]));
+    eqStrict(res, arr);
+
+    res2.forEach((ele, i) => eqStrict(ele, expected2[i]));
+    eqStrict(res2, arr2);
+  },
+
+  '(2) It should accept an array like object': function() {
+    var obj = {
+        length: 2,
+        0: 5,
+        1: 100
+      };
+
+      const res1 = reverse(obj);
+      eqStrict(res1, obj);
+      eqStrict(obj[0], 100);
+      eqStrict(obj[1], 5);
+    },
+
+  '(3) It should fail (return undefined) if arr.length is not a number': function() {
+    var obj = {
+        length: 'abc',
+        0: 5,
+        1: 100
+      };
+
+      const res1 = reverse(obj);
+      eqStrict(res1, undefined);
+    }
+
+})
+
+
+</script>

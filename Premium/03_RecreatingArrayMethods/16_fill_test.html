@@ -1,0 +1,128 @@
+<script src="./simple_test_framework.js"></script>
+<script>
+  
+  /* Previous tests used isNaN() and parseInt() to determine if an input is a number
+   * typeof value === 'number' seems to be an alternative and possibly better solution
+   * typeof NaN returns 'number', but its good enough for most cases
+  */
+
+  function fill(arr, value, optionalStart, optionalEnd) {
+    
+    // input is an obj, and input.length is not a number, set length to 0; 
+    if (!Array.isArray(arr) && isNaN(parseInt(arr.length))) arr.length = 0; 
+    
+    let start, end;
+
+    if (typeof optionalStart === 'number') {
+      optionalStart >= 0 ? start = optionalStart : start = arr.length + optionalStart;
+    } else {
+      start = 0;
+    }
+
+    if (typeof optionalEnd === 'number') {
+      optionalEnd >= 0 ? end = optionalEnd : end = arr.length + optionalEnd;
+    } else {
+      end = arr.length;
+    }
+
+
+
+
+    for (let i = start; i < end ; i++) {
+      arr[i] = value; 
+    }
+
+    return arr;
+  }
+  
+  tests({
+    '(1) It should modify all elements in an array with the provided value': function () {
+      const arr = [1, 2, 3];
+      const res1 = fill(arr, 5);
+
+
+      res1.forEach(ele => eqStrict(ele, 5));
+      arr.forEach(ele => eqStrict(ele, 5));
+      eqStrict(res1, arr);
+    }, 
+
+    '(2) It should modify all elements with references to the provided object.': function () {
+      let obj = {
+        name: 'original name'
+      }
+
+      const arr = [1, 2, 3];
+      const res1 = fill(arr, obj);
+      const expected = [obj, obj, obj];
+
+      res1.forEach(ele => eqStrict(ele, obj));
+      arr.forEach(ele => eqStrict(ele, obj));
+      eqStrict(res1, arr);
+
+      obj.name = 'changed name';
+      arr.forEach((ele,i) => eqStrict(ele.name, 'changed name'));
+    }, 
+
+    '(3) It should modify all elements from the start point': function () {
+      const arr = [1444, 566, 8783, 'nothing'];
+      const res1 = fill(arr, 5, 2);
+      const expected = [1444, 566, 5, 5];
+
+      res1.forEach((ele, i) => eqStrict(ele, expected[i]));
+      arr.forEach((ele, i) => eqStrict(ele, expected[i]));   
+      eqStrict(res1, arr);
+    }, 
+
+    '(4) It should modify all elements up till but not including the end point': function () {
+      const arr = [1, 2, 3];
+      const res1 = fill(arr, 4, 1, 2);
+      const expected = [1, 4, 3];
+
+      res1.forEach((ele, i) => eqStrict(ele, expected[i]));
+      arr.forEach((ele, i) => eqStrict(ele, expected[i]));   
+      eqStrict(res1, arr);
+
+      const arr2 = [1, 2, 3];
+      const res2 = fill(arr2, 4, 1, 1);
+      const expected2 = [1, 2, 3];
+
+      res2.forEach((ele, i) => eqStrict(ele, expected2[i]));
+      arr2.forEach((ele, i) => eqStrict(ele, expected2[i]));   
+      eqStrict(res2, arr2);
+    }, 
+
+    '(5) It should take start as length + start if start is negative': function () {
+      const arr = [455, 3095, 953, 0, false, 'hello'];
+      const res1 = fill(arr, 100, -2);
+      const expected = [455, 3095, 953, 0, 100, 100];
+      
+      res1.forEach((ele, i) => eqStrict(ele, expected[i]));
+      arr.forEach((ele, i) => eqStrict(ele, expected[i]));   
+      eqStrict(res1, arr);
+    },
+
+    '(6) It should take end as length + end if end is negative': function () {
+      const arr = [455, 3095, 953, 0, false, 'hello'];
+      const res1 = fill(arr, 100, 0, -3);
+      const expected = [100, 100, 100, 0, false, 'hello'];
+      
+      res1.forEach((ele, i) => eqStrict(ele, expected[i]));
+      arr.forEach((ele, i) => eqStrict(ele, expected[i]));   
+      eqStrict(res1, arr);
+    },
+    
+    '(7) It should have the same functionality for an array like object': function () {
+      var obj = {
+        length: 2,
+        0: 3355,
+        1: '99932'
+      };
+
+      const res1 = fill(obj, 88);
+      eqStrict(res1, obj);
+      eqStrict(obj[0], 88);
+      eqStrict(obj[1], 88);
+    }
+  })
+
+</script>

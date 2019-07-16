@@ -1,0 +1,200 @@
+<script src="./simple_test_framework.js"></script>
+<script>
+
+  function splice(arr, startIndex, deleteCount, item) {
+    let itemsRemoved = [];
+    let end;
+
+    // handling startIndex argument
+    if (startIndex < 0) startIndex += arr.length;
+
+    // handling deleteCount argument
+    if (isNaN(deleteCount) || deleteCount >= arr.length - startIndex) {
+      end = arr.length;
+      deleteCount = arr.length - startIndex;
+    } else if (deleteCount <= 0) { 
+      end = null;
+      deleteCount = null;
+    } else { // delete is specified and within range 
+      end = startIndex + deleteCount;
+    }
+
+
+    // getting the return value (items removed) before modifying the arr.
+    for (let i = startIndex; i < end; i++) {
+      itemsRemoved.push(arr[i]);
+    }
+
+    // handling deletion logic (in-place)
+    if (end === null && deleteCount === null) {
+      // deleteCount is <= 0, do nothing
+    } else {  // shifting the back elements to the deleted spots
+      arr.copyWithin(startIndex, end);
+      // cleaning up the extra arr length.
+      for (let j = 1; j <= deleteCount; j++) {
+        arr.pop();
+      }
+    }
+
+    // handling insertion logic (not in-place)
+    let startIndexOfItems = 3
+    let numItemsToBeAdded = arr.length - startIndexOfItems;
+    let tempArr = [];
+    let k = arr.length - 1; 
+
+    // moving every item to a temp arr 
+    while (k >= startIndex) {
+        tempArr.push(arr.pop());
+        k--; 
+    }
+    
+    // adding items
+    let s = startIndex; 
+    for (let j = startIndexOfItems; j < arguments.length; j++) {
+      arr[s] = arguments[j];   
+      s++;
+    }
+
+    // 
+    for (s ; tempArr.length > 0; s++) {
+      arr[s] = tempArr.pop();
+    } 
+
+
+
+    return itemsRemoved;
+  }
+
+  tests({
+    '(1) It should start changing the array from the startIndex': function () {
+      var arr = [1, 2, 3, 4, 5];
+      var res = splice(arr, 3);
+
+      var expectedRes = [4, 5];
+      var expectedArr = [1, 2, 3];
+
+      eqStrict(arr.length, 3);
+      res.forEach((ele, i) => eqStrict(ele, expectedRes[i]));
+      arr.forEach((ele, i) => eqStrict(ele, expectedArr[i]));
+    },
+
+    '(2) It should set startIndex === arr.length if start index > arr.length': function () {
+      var arr = [1, 2, 3, 4, 5];
+      var res = splice(arr, 200); // nothing should be removed
+      var expected = [1, 2, 3, 4, 5];
+
+      eqStrict(arr.length, 5);
+      res.forEach((ele, i) => eqStrict(ele, expected[i]));
+    },
+
+    '(3) It should set startIndex === arr.length + startIndex if startIndex is negative': function () {
+      var fish = ['angel', 'clown', 'mandarin', 'sturgeon'];
+      var res = splice(fish, -2); // start removing from 4 - 2 ie index 2.
+      var expected = ['mandarin', 'sturgeon'];
+      var expectedFish = ['angel', 'clown'];
+
+      eqStrict(fish.length, 2);
+      res.forEach((ele, i) => eqStrict(ele, expected[i]));
+      fish.forEach((ele, i) => eqStrict(ele, expectedFish[i]));
+    },
+
+    '(4) It should delete the number of items specified by deleteCount': function () {
+      var arr = [56, 882, 93, 40, 206, 997];
+      var res = splice(arr, 1, 2)
+      var expected = [882, 93];
+      var expectedArr = [56, 40, 206, 997];
+
+      eqStrict(arr.length, 4);
+      res.forEach((ele, i) => eqStrict(ele, expected[i]));
+      arr.forEach((ele, i) => eqStrict(ele, expectedArr[i]));
+    },
+
+    '(4) It should delete the number of items specified by deleteCount': function () {
+      var arr = [56, 882, 93, 40, 206, 997];
+      var res = splice(arr, 1, 2)
+      var expected = [882, 93];
+      var expectedArr = [56, 40, 206, 997];
+
+      eqStrict(arr.length, 4);
+      res.forEach((ele, i) => eqStrict(ele, expected[i]));
+      arr.forEach((ele, i) => eqStrict(ele, expectedArr[i]));
+    },
+
+    '(5) It should delete all elements from start if deleteCount is not specified': function () {
+      var arr = [56, 882, 93, 40, 206, 997];
+      var res = splice(arr, 4, undefined)
+      var expected = [206, 997];
+      var expectedArr = [56, 882, 93, 40];
+
+      eqStrict(arr.length, 4);
+      res.forEach((ele, i) => eqStrict(ele, expected[i]));
+      arr.forEach((ele, i) => eqStrict(ele, expectedArr[i]));
+    },
+
+    '(6) It should delete all elements from start if deleteCount >= arr.length - start': function () {
+      var arr = [56, 882, 93, 40, 206, 997];
+      var res = splice(arr, 3, 9999) // more than number of elements left in arr starting from start
+      var expected = [40, 206, 997];
+      var expectedArr = [56, 882, 93];
+
+      eqStrict(arr.length, 3);
+      res.forEach((ele, i) => eqStrict(ele, expected[i]));
+      arr.forEach((ele, i) => eqStrict(ele, expectedArr[i]));
+    },
+
+    '(6) It should not remove anything if deleteCount <= 0': function () {
+      var arr = [56, 882, 93, 40, 206, 997];
+      var res = splice(arr, 3, 0) // deleteCount === 0
+      var expected = [];
+      var expectedArr = [56, 882, 93, 40, 206, 997];
+
+      eqStrict(arr.length, 6);
+      res.forEach((ele, i) => eqStrict(ele, expected[i]));
+      arr.forEach((ele, i) => eqStrict(ele, expectedArr[i]));
+
+      res = splice(arr, 1, -999);  // deleteCount < 0
+      eqStrict(arr.length, 6);
+      res.forEach((ele, i) => eqStrict(ele, expected[i]));
+      arr.forEach((ele, i) => eqStrict(ele, expectedArr[i]));
+    },
+    
+    '(7) It should add the item specified in the arguments starting from startIndex': function () {
+      var arr = [56, 882, 93, 40, 206, 997];
+      var res = splice(arr, 1, 0, 'added!') // deleteCount === 0
+      var expected = [];
+      var expectedArr = [56, 'added!', 882, 93, 40, 206, 997];
+
+      eqStrict(arr.length, 7);
+      res.forEach((ele, i) => eqStrict(ele, expected[i]));
+      arr.forEach((ele, i) => eqStrict(ele, expectedArr[i]));
+
+  
+    },
+    
+    '(8) It should add the items specified in the arguments starting from startIndex': function () {
+      var arr = [56, 882, 93, 40, 206, 997];
+      var res = splice(arr, 1, 0, 'added!', 'added2', 3) // deleteCount === 0
+      var expected = [];
+      var expectedArr = [56, 'added!', 'added2', 3, 882, 93, 40, 206, 997];
+
+      eqStrict(arr.length, 9);
+      res.forEach((ele, i) => eqStrict(ele, expected[i]));
+      arr.forEach((ele, i) => eqStrict(ele, expectedArr[i]));  
+    },
+
+    '(9) It should be able to handle both deletion and addtion of elements': function () {
+      var arr = [56, 882, 93, 40, 206, 997];
+      var res = splice(arr, 2, 2, 'added!', 'added2', 3) // delete 93, 40
+      var expected = [93, 40];
+      var expectedArr = [56, 882, 'added!', 'added2', 3, 206, 997];
+
+      eqStrict(arr.length, 7);
+      res.forEach((ele, i) => eqStrict(ele, expected[i]));
+      arr.forEach((ele, i) => eqStrict(ele, expectedArr[i]));  
+    },
+
+
+
+
+  })
+</script>

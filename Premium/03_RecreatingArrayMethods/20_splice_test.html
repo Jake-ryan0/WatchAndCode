@@ -142,7 +142,7 @@
       arr.forEach((ele, i) => eqStrict(ele, expectedArr[i]));
     },
 
-    '(6) It should not remove anything if deleteCount <= 0': function () {
+    '(7) It should not remove anything if deleteCount <= 0': function () {
       var arr = [56, 882, 93, 40, 206, 997];
       var res = splice(arr, 3, 0) // deleteCount === 0
       var expected = [];
@@ -158,7 +158,7 @@
       arr.forEach((ele, i) => eqStrict(ele, expectedArr[i]));
     },
     
-    '(7) It should add the item specified in the arguments starting from startIndex': function () {
+    '(8) It should add the item specified in the arguments starting from startIndex': function () {
       var arr = [56, 882, 93, 40, 206, 997];
       var res = splice(arr, 1, 0, 'added!') // deleteCount === 0
       var expected = [];
@@ -171,7 +171,7 @@
   
     },
     
-    '(8) It should add the items specified in the arguments, starting from startIndex': function () {
+    '(9) It should add the items specified in the arguments, starting from startIndex': function () {
       var arr = [56, 882, 93, 40, 206, 997];
       var res = splice(arr, 1, 0, 'added!', 'added2', 3) // deleteCount === 0
       var expected = [];
@@ -182,7 +182,7 @@
       arr.forEach((ele, i) => eqStrict(ele, expectedArr[i]));  
     },
 
-    '(9) It should be able to handle both deletion and addtion of elements': function () {
+    '(10) It should be able to handle both deletion and addtion of elements': function () {
       var arr = [56, 882, 93, 40, 206, 997];
       var res = splice(arr, 2, 2, 'added!', 'added2', 3) // delete 93, 40
       var expected = [93, 40];

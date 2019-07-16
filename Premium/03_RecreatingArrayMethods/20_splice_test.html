@@ -55,7 +55,7 @@
       s++;
     }
 
-    // 
+    // placing all the elements in the tempArr back to original array
     for (s ; tempArr.length > 0; s++) {
       arr[s] = tempArr.pop();
     } 
@@ -78,7 +78,7 @@
       arr.forEach((ele, i) => eqStrict(ele, expectedArr[i]));
     },
 
-    '(2) It should set startIndex === arr.length if start index > arr.length': function () {
+    '(2) It should set startIndex === arr.length if start index >= arr.length': function () {
       var arr = [1, 2, 3, 4, 5];
       var res = splice(arr, 200); // nothing should be removed
       var expected = [1, 2, 3, 4, 5];
@@ -109,7 +109,7 @@
       arr.forEach((ele, i) => eqStrict(ele, expectedArr[i]));
     },
 
-    '(4) It should delete the number of items specified by deleteCount': function () {
+    '(4) It should delete the number of items specified by deleteCount, starting from startIndex' : function () {
       var arr = [56, 882, 93, 40, 206, 997];
       var res = splice(arr, 1, 2)
       var expected = [882, 93];

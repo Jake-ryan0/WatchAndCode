@@ -204,10 +204,10 @@
 		decimal = decimal || lib.settings.number.decimal;
 
 		 // Build regex to strip out everything except digits, decimal point and minus sign:
-		var regex = new RegExp("[^0-9-" + decimal + "]", ["g"]),
+		var regex = new RegExp("[^0-9-" + decimal + "]", "g"),
 			unformatted = parseFloat(
 				("" + value)
-				.replace(/\((.*)\)/, "-$1") // replace bracketed values with negatives
+				.replace(/\((.*\d{1,}.*)\)/, "-$1") // replace bracketed values with negatives $1 is the capture group, .* means any character any number of times
 				.replace(regex, '')         // strip out any cruft
 				.replace(decimal, '.')      // make sure decimal point is standard
 			);
@@ -261,6 +261,7 @@
 		number = unformat(number);
 
 		// Build options object from second param (if object) or all params, extending defaults:
+		// defaults is a function that takes in an object and a def and returns and options object.
 		var opts = defaults(
 				(isObject(precision) ? precision : {
 					precision : precision,
@@ -275,11 +276,14 @@
 
 			// Do some calc:
 			negative = number < 0 ? "-" : "",
-			base = parseInt(toFixed(Math.abs(number || 0), usePrecision), 10) + "",
+			base = parseInt(toFixed(Math.abs(number), usePrecision), 10) + "", // pulling out the main number without decimals or signs
 			mod = base.length > 3 ? base.length % 3 : 0;
 
 		// Format the number:
-		return negative + (mod ? base.substr(0, mod) + opts.thousand : "") + base.substr(mod).replace(/(\d{3})(?=\d)/g, "$1" + opts.thousand) + (usePrecision ? opts.decimal + toFixed(Math.abs(number), usePrecision).split('.')[1] : "");
+		return negative + 
+					 (mod ? base.substr(0, mod) + opts.thousand : "") + 
+					 base.substr(mod).replace(/(\d{3})(?=\d)/g, "$1" + opts.thousand) + 
+					 (usePrecision ? opts.decimal + toFixed(Math.abs(number), usePrecision).split('.')[1] : "");
 	};
 
 
@@ -368,7 +372,7 @@
 			maxLength = 0,
 
 			// Format the list according to options, store the length of the longest string:
-			formatted = map(list, function(val, i) {
+			formatted = map(list, function(val) {
 				if (isArray(val)) {
 					// Recursively format columns if list is a multi-dimensional array:
 					return lib.formatColumn(val, opts);
@@ -377,10 +381,12 @@
 					val = unformat(val);
 
 					// Choose which format to use for this value (pos, neg or zero):
-					var useFormat = val > 0 ? formats.pos : val < 0 ? formats.neg : formats.zero,
+					var useFormat = val > 0 ? formats.pos : val < 0 ? formats.neg : formats.zero
 
 						// Format this value, push into formatted list and save the length:
-						fVal = useFormat.replace('%s', opts.symbol).replace('%v', formatNumber(Math.abs(val), checkPrecision(opts.precision), opts.thousand, opts.decimal));
+						let formattedNumber = formatNumber(Math.abs(val), checkPrecision(opts.precision), opts.thousand, opts.decimal);
+						var fVal = useFormat.replace('%s', opts.symbol)
+														    .replace('%v', formattedNumber);
 
 					if (fVal.length > maxLength) maxLength = fVal.length;
 					return fVal;
@@ -388,11 +394,13 @@
 			});
 
 		// Pad each number in the list and send back the column of numbers:
-		return map(formatted, function(val, i) {
+		return map(formatted, function(val) {
 			// Only if this is a string (not a nested array, which would have already been padded):
 			if (isString(val) && val.length < maxLength) {
 				// Depending on symbol position, pad after symbol or at index 0:
-				return padAfterSymbol ? val.replace(opts.symbol, opts.symbol+(new Array(maxLength - val.length + 1).join(" "))) : (new Array(maxLength - val.length + 1).join(" ")) + val;
+				return padAfterSymbol ? 
+							 val.replace(opts.symbol, opts.symbol+(new Array(maxLength - val.length + 1).join(" "))) : 
+							 (new Array(maxLength - val.length + 1).join(" ")) + val;
 			}
 			return val;
 		});

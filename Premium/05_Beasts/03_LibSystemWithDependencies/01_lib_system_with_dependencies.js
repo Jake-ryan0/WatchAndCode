@@ -1,4 +1,4 @@
-/* Realized that property assignment by bracket notation uses strings
+/* Realized that property assignment by bracket notation uses strings, line 26.
 */  
 
 (function() {

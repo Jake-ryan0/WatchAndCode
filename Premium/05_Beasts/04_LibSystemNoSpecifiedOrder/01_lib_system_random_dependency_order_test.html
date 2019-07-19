@@ -1,0 +1,196 @@
+<script src="./simple_test_framework.js"></script>
+<script>
+
+/*
+ * Add: Library is added to libraryStorage
+ * Load: Library is requested by the app the function call returns the requested lib variable from libStorage
+ 
+ * 
+ * Used different library names for each test eg
+ * loadAndAddLibraries('name4') for test 4.
+ * 
+ * This is because previous libraries loaded would still be accessible throughout all the tests.
+ * If I used 'name' throughout, library 'name' would still be avail even during test 4
+ * 
+ * When using name instead of name4, it would still work even 'name' wasn't loaded during test 4
+ * loadAndAddLibraries('workBlurb4', ['name4', 'company4'], function (name, company) {
+        return name + ' is going to apply to ' + company + ' for summer 2020';
+      });
+*/
+  (function () {
+    const libraryStorage = {};
+
+    function loadAndAddLibraries(libraryName, dependenciesArr, callback) {
+      // retrieving / using a lib from libraryStorage
+      if (arguments.length === 1) {
+        if (libraryStorage[libraryName].addedSuccessfully) return libraryStorage[libraryName].libVariable;
+        else {
+          loadAndAddLibraries(libraryName, libraryStorage[libraryName].dependenciesArr, libraryStorage[libraryName].callback);
+          if (libraryStorage[libraryName].addedSuccessfully) return libraryStorage[libraryName].libVariable;
+          else throw new Error(libraryName + " could not be loaded at this time because the required dependencies have not been loaded.");
+        }
+        // saving a lib into libraryStorage
+      } else {
+        const arrOfDependentLibVariables = [];
+        let allDepdendenciesExistInLibraryStorage = true;
+
+        // accepts an array - names of the dependencies
+        // [] means zero dependencies         
+        if (Array.isArray(dependenciesArr)) {
+          // checking if all dependencies alr exist in libStorage
+          for (let i = 0; i < dependenciesArr.length; i++) {
+            const nameOfLibToload = dependenciesArr[i];
+            if (!libraryStorage.hasOwnProperty(nameOfLibToload)) {
+              allDepdendenciesExistInLibraryStorage = false;
+              break;
+            }
+          }
+        } else { // dependencies argument is not valid 
+          throw new Error(libraryName + " could not be loaded at this time because the dependencies argument was not passed in as an array");
+        }
+
+        // all required dependencies present, load normally, set addedSuccessfully to true
+        if (allDepdendenciesExistInLibraryStorage) {
+          for (let i = 0; i < dependenciesArr.length; i++) {
+            const nameOfLibToload = dependenciesArr[i];
+            arrOfDependentLibVariables.push(loadAndAddLibraries(nameOfLibToload));
+          }
+          const currentLibToBeAddedToLibraryStorage = callback.apply(this, arrOfDependentLibVariables);
+          libraryStorage[libraryName] = {
+            libVariable: currentLibToBeAddedToLibraryStorage,
+            addedSuccessfully: true
+          }
+        } else { // not all require dependencies avail, do not add it yet. 
+          libraryStorage[libraryName] = {
+            callback: callback,
+            dependenciesArr: dependenciesArr,
+            addedSuccessfully: false
+          }
+        }
+      }
+    }
+    window['loadAndAddLibraries'] = loadAndAddLibraries;
+  })();
+
+
+  tests({
+    '(1) It should allow libraries without depedencies to be added/loaded. Specified by []': function () {
+
+      loadAndAddLibraries('name1', [], function () {
+        return 'Jack';
+      });
+
+      const nameLib = loadAndAddLibraries('name1');
+      eqStrict(nameLib, 'Jack');
+    },
+
+    '(2) It should allow the current library being added/loaded access to previously added libraries in libraryStorage': function () {
+      // adding 3 libraries
+      loadAndAddLibraries('name2', [], function () {
+        return 'Jill';
+      });
+
+      loadAndAddLibraries('company2', [], function () {
+        return 'Facebook';
+      });
+
+
+      // current libary to be added, which requires name and company library (variables)
+      loadAndAddLibraries('workBlurb2', ['name2', 'company2'], function (name, company) {
+        return name + ' works at ' + company;
+      });
+
+
+      // loading the 'workBlurb' library
+      const workBlurb = loadAndAddLibraries('workBlurb2'); // 'Jill works at Facebook'
+      eqStrict(workBlurb, 'Jill works at Facebook');
+    },
+
+    '(3) It should allow adding and loading of libraries with dependencies being not in order': function () {
+
+      loadAndAddLibraries('workBlurb3', ['name3', 'company3'], function (name, company) {
+        return name + ' is trying to get into ' + company;
+      });
+
+      loadAndAddLibraries('name3', [], function () {
+        return 'Adam';
+      });
+
+      loadAndAddLibraries('company3', [], function () {
+        return 'Apple';
+      });
+
+      const workBlurb = loadAndAddLibraries('workBlurb3');
+      eqStrict(workBlurb, 'Adam is trying to get into Apple');
+    },
+
+    '(4) It should throw an error if the loaded library does not have access to all its dependencies yet': function () {
+      let errorMessage = 'No error';
+
+      loadAndAddLibraries('workBlurb4', ['name4', 'company4'], function (name, company) {
+        return name + ' works at ' + company;
+      });
+
+
+      try {
+        loadAndAddLibraries('workBlurb4');
+      } catch (e) {
+        errorMessage = e.message
+      }
+
+      eqStrict(errorMessage, 'workBlurb4 could not be loaded at this time because the required dependencies have not been loaded.');
+    },
+
+    '(5) It should run the callback function for each lib once': function () {
+
+      let numTimesWorkBlurbCBHasRun = 0;
+      let numTimesNameCBHasRun = 0;
+      let numTimesCompanyCBHasRun = 0;
+
+      loadAndAddLibraries('workBlurb5', ['name5', 'company5'], function (name, company) {
+        numTimesWorkBlurbCBHasRun++;
+        return name + ' is going to apply to ' + company + ' for summer 2020';
+      });
+
+      loadAndAddLibraries('name5', [], function () {
+        numTimesNameCBHasRun++;
+        return 'JX';
+      });
+
+      loadAndAddLibraries('company5', [], function () {
+        numTimesCompanyCBHasRun++;
+        return 'Facebook SV';
+      });
+
+      // loading the same libraries 10x
+      for (let i = 0; i < 10; i++) {
+        loadAndAddLibraries('name5');
+        loadAndAddLibraries('workBlurb5');
+        loadAndAddLibraries('company5');
+      }
+
+      const workBlurb = loadAndAddLibraries('workBlurb5');
+      eqStrict(workBlurb, 'JX is going to apply to Facebook SV for summer 2020');
+      eqStrict(numTimesCompanyCBHasRun, 1);
+      eqStrict(numTimesNameCBHasRun, 1);
+      eqStrict(numTimesWorkBlurbCBHasRun, 1);
+    },
+
+    '(6) It should throw an error if dependencies argument is not an array': function () {
+      let errorMessage = '';
+
+
+
+      try {
+        loadAndAddLibraries('company6', 'dependency1', () => 'Google');
+      } catch (e) {
+        errorMessage = e.message;
+      }
+
+      eqStrict(errorMessage, 'company6 could not be loaded at this time because the dependencies argument was not passed in as an array');
+    }
+  })
+
+
+
+</script>

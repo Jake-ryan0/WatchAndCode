@@ -1,0 +1,167 @@
+<script src="./simple_test_framework.js"></script>
+<script>
+	// reference
+	function improvedToFixed(value, precision) {
+		// eg 1.005 * 100 = 100.4999999
+		// exponential notation moves the decimal place over instead of directly multiplying.
+		let exponentionalForm = Number(value + 'e' + precision); // 1.0033352342 * 10^2 (if 1.3415 * 10^2 no problem)
+		let rounded = Math.round(exponentionalForm); // 100.3353342 => 100 (134.15 => 134) ie remove all the decimals that are not needed
+		let result = Number(rounded + 'e-' + precision); // 100 => 1.00 instead of 100 / 100 which will give 1. (134 / 100 = 1.34)
+		// calls Number.toFixed
+		return result.toFixed(precision); // 1.toFixed(2) => 1.00
+	}
+
+	function stringManipulationToFixed(value, precision) {
+		value = value.toString();
+		let isInteger;
+		let decimalComponent;
+		let integerComponent;
+		let originalDecimalLocation = value.indexOf('.');
+		originalDecimalLocation < 0 ? isInteger = true : isInteger = false;
+
+		if (isInteger) return Number(value).toFixed(precision);
+		else {
+			integerComponent = value.substring(0, originalDecimalLocation);  // 11.46975030 will return 11 (without '.');
+			decimalComponent = value.substring(originalDecimalLocation + 1); // 11.46975030 will return 46975030
+
+			if (precision === 0) {
+				if (decimalComponent.substring(0, 1) < 5) {
+					return integerComponent.toString();
+				} else {
+					let int = parseInt(integerComponent);
+					let result = int + 1;
+					return result.toString();
+				}
+			}
+
+			// gets one extra digit more than the specified precision
+			// hence, there is a need to padStart / padEnd until it hits precision + 1
+			let requiredDecimalComponent = decimalComponent.substring(0, precision + 1).padEnd(precision + 1, '0'); // 469, 3 digits if precision is 2  
+			let roundedDecimalComponent = roundToNearestTenthPlace(requiredDecimalComponent, precision + 1); // rounded to 470
+			let finalDecimalComponent = '';
+
+			// ie 426.9999 => 426.10000 => 427.000 precision = 3
+			if (roundedDecimalComponent.length > precision + 1) {
+				integerComponent++;
+				finalDecimalComponent = finalDecimalComponent.padEnd(precision, '0');
+				return integerComponent + '.' + finalDecimalComponent; 
+			} 
+
+			if (roundedDecimalComponent.length === precision) {
+				finalDecimalComponent = roundedDecimalComponent;
+			} else if (roundedDecimalComponent.length > precision) {
+				// cutting off the extra digit 
+				finalDecimalComponent = roundedDecimalComponent.slice(0, -1);
+			} else { // padding
+				finalDecimalComponent = roundedDecimalComponent.toString().padEnd(precision, '0');
+			}
+
+			return integerComponent + '.' + finalDecimalComponent; // 11.47
+		}
+	}
+
+	// code from stack overflow
+	function roundToNearestTenthPlace(val, precision) {
+		valNum = Number(val);
+		valString = val.toString();
+		let roundedResult;
+		let finalString = '';
+
+		if (valNum === 0) return Number(0);
+
+		// cases of 0.0007
+		if (valString.charAt(0) === '0') return roundToNearestTenthPlace(valString.slice(1), precision);
+
+		roundedResult = (Math.round(valNum / 10) * 10).toString();
+		finalString = roundedResult.padStart(precision, '0'); // deal with cases of 0.0007 becoming 0.0010 
+		return finalString;
+	}
+
+	function randomFloatBetween(minValue, maxValue) {
+		return parseFloat(Math.min(minValue + (Math.random() * (maxValue - minValue)), maxValue));
+	}
+
+	tests({
+		'(1) It should round floats to 0 precision': function () {
+			let arr = [459.215, 4574.8, 6023.6, 3010.5, 3028.3333333333335, 5141.5, 8954.222224]
+			const expected = ['459', '4575', '6024', '3011', '3028', '5142', '8954'];
+
+			arr = arr.map(num => stringManipulationToFixed(num, 0));
+			arr.forEach((num, i) => eqStrict(num, expected[i]));
+		},
+
+		'(2) It should pad integers with x zeroes, where x is the precision': function () {
+			let arr = [52, 66, 384, 3, 2226, 4858, 685, 8, 8960];
+			const expected = ['52.000', '66.000', '384.000', '3.000', '2226.000', '4858.000', '685.000', '8.000', '8960.000'];
+
+			arr = arr.map(num => stringManipulationToFixed(num, 3));
+			arr.forEach((num, i) => eqStrict(num, expected[i]));
+		},
+
+		'(3) It should round floats to 1 precision': function () {
+			let arr = [123.4, 218.483613, 714.8, 2.822103, 6.1089, 51284.37, 1199.00000009];
+			const expected = ['123.4', '218.5', '714.8', '2.8', '6.1', '51284.4', '1199.0'];
+
+			arr = arr.map(num => stringManipulationToFixed(num, 1));
+			arr.forEach((num, i) => eqStrict(num, expected[i]));
+		},
+
+
+		'(4) It should round floats to 2 precision': function () {
+			let arr = [36.284626, 45.16, 47.045994, 272.4886, 13.239999999999998, 2.88000001, 891.84];
+			const expected = ['36.28', '45.16', '47.05', '272.49', '13.24', '2.88', '891.84'];
+
+			arr = arr.map(num => stringManipulationToFixed(num, 2));
+			arr.forEach((num, i) => eqStrict(num, expected[i]));
+		},
+
+		'(5) It should round floats to x precision': function () {
+			let arr = [4125.99999, 645.336, 2474.5468, 4173.715565, 92.6331476, 9358.0000000021, 251.15];
+			const expected = ['4126.0000', '645.3360', '2474.5468', '4173.7156', '92.6331', '9358.0000', '251.1500'];
+
+			arr = arr.map(num => stringManipulationToFixed(num, 4));
+			arr.forEach((num, i) => eqStrict(num, expected[i]));
+		},
+
+		'(6) It should pad zeros if the precision is more precise than the supplied': function () {
+			let arr = [6533.7, 1254.42, 369];
+			const expected = ['6533.700', '1254.420', '369.000'];
+
+			arr = arr.map(num => stringManipulationToFixed(num, 3));
+			arr.forEach((num, i) => eqStrict(num, expected[i]));
+		},
+
+		'(7) It should work for gordons test cases': function () {
+			let arr = [0.615, 10.235, 1.005];
+			const expected = ['0.62', '10.24', '1.01'];
+
+			arr = arr.map(num => stringManipulationToFixed(num, 2));
+			arr.forEach((num, i) => eqStrict(num, expected[i]));
+		},
+
+
+		'(8) It should work A BRUTE FORCE AMOUNT OF TEST CASES (10 million)': function () {
+			// testing against improvedToFixed
+			let arr = [];
+			let mappedArr = [];
+			for (let i = 0; i < 10000000; i++) {
+				arr.push(randomFloatBetween(1, 9999));
+			}
+						
+		
+			const expected = arr.map(num => improvedToFixed(num, 4));
+		
+			mappedArr = arr.map(num => stringManipulationToFixed(num, 4));
+			window.x = mappedArr; 
+			mappedArr.forEach((num, i) => eqStrict(num, expected[i]));
+
+		},
+
+
+
+	})
+
+
+
+
+</script>

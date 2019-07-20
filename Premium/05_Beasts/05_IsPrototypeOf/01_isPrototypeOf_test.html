@@ -1,0 +1,106 @@
+<script src="./simple_test_framework.js"></script>
+<script>
+
+  /* Did not code the typeError test 
+   * Only applies when null.getPrototypeOf() bc the method doesnt exist on null
+   * Left out test cases for null and undefined, works for the rest. 
+  */
+
+  const basePrototype = Object.getPrototypeOf({}); 
+
+
+  function isPrototypeOf(obj, prototype) {
+
+    if (obj === null || obj === undefined) throw new TypeError('Obj cannot be null or undefined');
+
+
+    // Case 1: prototype is null, all objects have null as the last object in the prototype chain
+    // Case 2: prototype is base Object prototype, all objects have this in their protoype chain
+    // Case 3: the current object === the prototype to check for
+    if (prototype === null || prototype === basePrototype || obj === prototype)  return true;
+    
+    
+    // reached the point where obj.__proto__ will return null, hence return false;
+    if (obj === basePrototype && prototype != basePrototype) return false;
+  
+
+
+    obj = Object.getPrototypeOf(obj);
+    return isPrototypeOf(obj, prototype);
+  }
+
+  tests({
+    '(1) It should return true if the prototype exists on the prototype chain of the obj': function () {
+      var mammal = {
+        eat: function() {
+          console.log('drinks milk as a baby'); 
+        }
+      }
+      
+      var canine = {
+        bark: function () {
+          console.log('bark');
+        }
+      };
+      
+      // same as Object.setPrototypeOf(canine, mammal); but very slow
+      // or Object.create(canine);
+      canine.__proto__ = mammal; 
+
+      var dog = Object.create(canine);
+      dog.fetch = function () {
+        console.log('fetch');
+      };
+
+      var frostieTheWestie = Object.create(dog);
+
+      eqStrict( isPrototypeOf(frostieTheWestie, dog), true);
+      eqStrict( isPrototypeOf(frostieTheWestie, canine), true);
+      eqStrict( isPrototypeOf(frostieTheWestie, mammal), true);
+      eqStrict( isPrototypeOf(frostieTheWestie, basePrototype), true);
+      eqStrict( isPrototypeOf(frostieTheWestie, null), true);
+    },
+
+    '(2) It should return false if the prototype does not exist on the prototype chain': function () {
+  
+      var nonInheritedProto = {name: 'I am a non-inherited protoype'}; 
+
+      var dog = {};
+      dog.fetch = function () {
+        console.log('fetch');
+      };
+
+      var frostieTheWestie = Object.create(dog);
+
+      eqStrict( isPrototypeOf(frostieTheWestie, nonInheritedProto), false);
+    },
+
+    '(3) It should throw a typeError if object is null or undefined': function () {
+  
+      var nullObj = null;
+      let s1 = '';
+      let s2 = '';
+
+
+      try {
+        eqStrict( isPrototypeOf(null, basePrototype), false);
+      } catch (e) {
+        s1 = e.message;
+      }
+      eqStrict(s1, 'Obj cannot be null or undefined');
+
+
+      try {
+        eqStrict( isPrototypeOf(undefined, basePrototype), false);
+      } catch (e) {
+        s2 = e.message;
+      }
+      eqStrict(s2, 'Obj cannot be null or undefined');
+
+    },
+
+    
+
+
+  })
+</script>

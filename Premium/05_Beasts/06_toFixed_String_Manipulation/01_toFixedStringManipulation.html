@@ -40,6 +40,8 @@
 			let roundedDecimalComponent = roundToNearestTenthPlace(requiredDecimalComponent, precision + 1); // rounded to 470
 			let finalDecimalComponent = '';
 
+
+			// handle changes in integer component
 			// ie 426.9999 => 426.10000 => 427.000 precision = 3
 			if (roundedDecimalComponent.length > precision + 1) {
 				integerComponent++;
@@ -49,7 +51,7 @@
 
 			if (roundedDecimalComponent.length === precision) {
 				finalDecimalComponent = roundedDecimalComponent;
-			} else if (roundedDecimalComponent.length > precision) {
+			} else if (roundedDecimalComponent.length === precision + 1) {
 				// cutting off the extra digit 
 				finalDecimalComponent = roundedDecimalComponent.slice(0, -1);
 			} else { // padding
@@ -148,11 +150,8 @@
 				arr.push(randomFloatBetween(1, 9999));
 			}
 						
-		
 			const expected = arr.map(num => improvedToFixed(num, 4));
-		
 			mappedArr = arr.map(num => stringManipulationToFixed(num, 4));
-			window.x = mappedArr; 
 			mappedArr.forEach((num, i) => eqStrict(num, expected[i]));
 
 		},
